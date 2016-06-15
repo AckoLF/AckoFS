@@ -146,23 +146,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="fs.cpp" />
     <ClCompile Include="KernelFS.cpp" />
-    <ClCompile Include="KernelPartition.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="file.h" />
     <ClInclude Include="fs.h" />
     <ClInclude Include="KernelFS.h" />
-    <ClInclude Include="KernelPartition.h" />
     <ClInclude Include="part.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="uputstvo_za_rad_sa_particijom.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="cpplint.py" />
     <None Include="disk1.dat" />
     <None Include="disk2.dat" />
     <None Include="p1.ini" />
