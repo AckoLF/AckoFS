@@ -146,12 +146,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BitVector.cpp" />
     <ClCompile Include="fs.cpp" />
     <ClCompile Include="KernelFS.cpp" />
     <ClCompile Include="KernelPartition.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BitVector.h" />
     <ClInclude Include="file.h" />
     <ClInclude Include="fs.h" />
     <ClInclude Include="KernelFS.h" />

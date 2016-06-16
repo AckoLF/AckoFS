@@ -27,6 +27,9 @@
     <ClCompile Include="fs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BitVector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="part.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KernelPartition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BitVector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
