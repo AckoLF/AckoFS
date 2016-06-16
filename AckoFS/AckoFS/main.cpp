@@ -11,6 +11,11 @@ using namespace std;
 int main(void) {
 	cout << "Hello, my name is AckoFS! :)" << endl;
 	auto p1 = new Partition("p1.ini");
+	char * buffer1 = "acko", *buffer2 = new char[2048];
+	p1->writeCluster(5, buffer1);
+	p1->readCluster(5, buffer2);
+	puts(buffer1);
+	puts(buffer2);
 	cout << "Partition p1 created!" << endl;
 	auto result = FS::mount(p1);
 	cout << "P1 mounted at: " << result << endl;

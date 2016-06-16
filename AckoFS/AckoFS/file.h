@@ -1,5 +1,7 @@
 #pragma once
 
+#include "fs.h"
+
 // File: file.h
 class KernelFile;
 class File {

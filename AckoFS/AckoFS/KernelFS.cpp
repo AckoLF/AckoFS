@@ -38,18 +38,19 @@ void KernelFS::unlock() {
 char KernelFS::mount(Partition *partition) {
 	for (int i = 0; i < 26; i++) {
 		if (mountedPartitions[i] == nullptr) {
-			mountedPartitions[i] = make_unique<KernelPartition>(partition);
-			return 'a' + i;		
+			mountedPartitions[i] = make_shared<KernelPartition>(partition);
+			return 'A' + i;		
 		}
 	}
 	// no space to mount the partition
-	return 'X';
+	return '0';
 }
 
-char KernelFS::unmount(char partition) {
+char KernelFS::unmount(char partitionSymbol) {
 	// return '0' if already a nullptr?
-	if (('a' <= partition) && (partition <= 'z')) {
-		mountedPartitions[partition - 'a'].reset(nullptr);
+	auto partition = getPartition(partitionSymbol);
+	if (partition != nullptr) {
+		partition.reset();
 		return '1';
 	}
 	else {
@@ -57,7 +58,64 @@ char KernelFS::unmount(char partition) {
 	}
 }
 
+// TODO(acko): Implement format
 char KernelFS::format(char partition) {
-	cout << "format TODO!" << endl;
 	return '0';
+}
+
+File * KernelFS::open(char *fileName, char mode) {
+	auto partitionSymbol = fileName[0];
+	auto partition = getPartition(partitionSymbol);
+	// illegal partition name or unmounted partition
+	if (partition == nullptr) {
+		return nullptr;
+	}
+	// fileName ~ A:\foo.bar
+	auto fileNameString = string(fileName);
+	auto filePath = fileNameString.substr(3);
+	return partition->open(filePath, mode);
+}
+
+char KernelFS::readRootDir(char partitionSymbol, EntryNum entryNumber, Directory & directory) {
+	auto partition = getPartition(partitionSymbol);
+	// illegal partition name or unmounted partition
+	if (partition == nullptr) {
+		return '0';
+	}
+	return partition->readRootDir(entryNumber, directory);
+}
+
+char KernelFS::doesExist(char * fileName) {
+	auto partitionSymbol = fileName[0];
+	auto partition = getPartition(partitionSymbol);
+	// illegal partition name or unmounted partition
+	if (partition == nullptr) {
+		return '0';
+	}
+	// fileName ~ A:\foo.bar
+	auto fileNameString = string(fileName);
+	auto filePath = fileNameString.substr(3);
+	return partition->doesExist(filePath);
+}
+
+char KernelFS::deleteFile(char * fileName) {
+	auto partitionSymbol = fileName[0];
+	auto partition = getPartition(partitionSymbol);
+	// illegal partition name or unmounted partition
+	if (partition == nullptr) {
+		return '0';
+	}
+	// fileName ~ A:\foo.bar
+	auto fileNameString = string(fileName);
+	auto filePath = fileNameString.substr(3);
+	return partition->deleteFile(filePath);
+}
+
+std::shared_ptr<KernelPartition> KernelFS::getPartition(char partitionSymbol) {
+	if (('A' <= partitionSymbol) && (partitionSymbol <= 'Z')) {
+		return mountedPartitions[partitionSymbol - 'A'];
+	}
+	else {
+		return nullptr;
+	}
 }

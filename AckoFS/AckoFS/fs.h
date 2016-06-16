@@ -22,7 +22,7 @@ class Partition;
 class File;
 class FS {
 public:
-	~FS();
+	~FS() = default;
 	static char mount(Partition* partition); //montira particiju
 																					 // vraca dodeljeno slovo
 	static char unmount(char part); //demontira particiju oznacenu datim
@@ -38,6 +38,6 @@ public:
 	static File* open(char* fname, char mode);
 	static char deleteFile(char* fname);
 protected:
-	FS();
+	FS() = default;
 	static KernelFS *myImpl;
 };
