@@ -42,9 +42,9 @@ char * KernelPartition::fetchClusterFromCache(ClusterNo clusterNumber) {
 	else {
 		auto cluster = new char[2048];
 		partition->readCluster(clusterNumber, cluster);
-		// make_pair
-		// deep copy?
-		clusterCache.insert({ clusterNumber, cluster });
+		auto cachedCluster = new char[2048];
+		memcpy(cachedCluster, cluster, 2048);
+		clusterCache.insert({ clusterNumber, cachedCluster});
+		return cachedCluster;
 	}
-	
 }
