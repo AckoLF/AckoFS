@@ -29,15 +29,17 @@ int main(void) {
 	// bitVector testing...
 	char *bitVector = new char[2048];
 	memset(bitVector, 0, sizeof(bitVector));
-	cout << bitVectorIdx(10) << endl;
-	cout << bitVectorPosition(10) << endl;
-	cout << bitVectorPosition(8) << " " << bitVectorPosition(15) << endl;
+	cout << "bitVectorIdx(10) = " << bitVectorIdx(10) << endl;
+	cout << "bitVectorPos(10) = " << bitVectorPos(10) << endl;
+	cout << "bitVectorPos(8) = " << bitVectorPos(8) << endl;
+	cout << "bitVectorPos(15) = " << bitVectorPos(15) << endl;
 	setBitValue(bitVector, 0, true);
 	setBitValue(bitVector, 7, true);
 	setBitValue(bitVector, 0, false);
-	unsigned char test1 = bitVector[0];
-	int test2 = test1;
-	cout << test2 << endl;
+	setBitValue(bitVector, 0, true);
+	auto bitVector0 = static_cast<int>(static_cast<unsigned char>(bitVector[0]));
+	cout << "bitVector0 = " << bitVector0 << endl;
+	cout << "findFirstNotSet = " << findFirstNotSet(bitVector, 2048) << endl;
 
 	return 0;
 }
