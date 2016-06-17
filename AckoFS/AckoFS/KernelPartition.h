@@ -5,6 +5,7 @@
 
 #include "part.h"
 #include "file.h"
+#include "BitVector.h"
 
 class KernelPartition
 {
@@ -20,5 +21,7 @@ private:
 	Partition *partition;
 	std::unordered_map<ClusterNo, char*> clusterCache;
 	char* fetchClusterFromCache(ClusterNo clusterNumber);
+	void dropClusterFromCache(ClusterNo clusterNumber);
+	void saveClusterToPartition(ClusterNo clusterNumber);
 };
 

@@ -59,8 +59,9 @@ char KernelFS::unmount(char partitionSymbol) {
 }
 
 // TODO(acko): Implement format
-char KernelFS::format(char partition) {
-	return '0';
+char KernelFS::format(char partitionSymbol) {
+	auto partition = getPartition(partitionSymbol);
+	return partition->format();
 }
 
 File * KernelFS::open(char *fileName, char mode) {

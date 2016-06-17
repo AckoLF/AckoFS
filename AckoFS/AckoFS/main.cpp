@@ -20,9 +20,9 @@ int main(void) {
 	cout << "Partition p1 created!" << endl;
 	auto result = FS::mount(p1);
 	cout << "P1 mounted at: " << result << endl;
-	result = FS::format('a');
+	result = FS::format('A');
 	cout << "P1 formated: " << result << endl;
-	result = FS::unmount('a');
+	result = FS::unmount('A');
 	cout << "P1 unmonuted: " << result << endl;
 	cout << "Goodbye, dear user! :(" << endl;
 
@@ -40,6 +40,14 @@ int main(void) {
 	auto bitVector0 = static_cast<int>(static_cast<unsigned char>(bitVector[0]));
 	cout << "bitVector0 = " << bitVector0 << endl;
 	cout << "findFirstNotSet = " << findFirstNotSet(bitVector, 2048) << endl;
+
+	p1->readCluster(0, bitVector);
+	for (int i = 0; i < 10; i++) {
+		printf("%d ", static_cast<int>(static_cast<unsigned char>(bitVector[i])));
+	}
+	printf("\n");
+
+	cout << "findFirstNotSet from partition = " << findFirstNotSet(bitVector, 2048) << endl;
 
 	return 0;
 }
