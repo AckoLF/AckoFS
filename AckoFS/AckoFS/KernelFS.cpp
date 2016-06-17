@@ -85,7 +85,7 @@ char KernelFS::readRootDir(char partitionSymbol, EntryNum entryNumber, Directory
 	return partition->readRootDir(entryNumber, directory);
 }
 
-char KernelFS::doesExist(char * fileName) {
+char KernelFS::doesExist(char *fileName) {
 	auto partitionSymbol = fileName[0];
 	auto partition = getPartition(partitionSymbol);
 	// illegal partition name or unmounted partition
@@ -98,7 +98,7 @@ char KernelFS::doesExist(char * fileName) {
 	return partition->doesExist(filePath);
 }
 
-char KernelFS::deleteFile(char * fileName) {
+char KernelFS::deleteFile(char *fileName) {
 	auto partitionSymbol = fileName[0];
 	auto partition = getPartition(partitionSymbol);
 	// illegal partition name or unmounted partition

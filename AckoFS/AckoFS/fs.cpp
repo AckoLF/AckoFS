@@ -31,21 +31,21 @@ char FS::readRootDir(char part, EntryNum n, Directory & d) {
 	return result;
 }
 
-char FS::doesExist(char * fname) {
+char FS::doesExist(char *fname) {
 	myImpl->lock();
 	auto result = myImpl->doesExist(fname);
 	myImpl->unlock();
 	return result;
 }
 
-File * FS::open(char * fname, char mode) {
+File * FS::open(char *fname, char mode) {
 	myImpl->lock();
 	auto result = myImpl->open(fname, mode);
 	myImpl->unlock();
 	return result;
 }
 
-char FS::deleteFile(char * fname) {
+char FS::deleteFile(char *fname) {
 	myImpl->lock();
 	auto result = myImpl->deleteFile(fname);
 	myImpl->unlock();

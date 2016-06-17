@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_map>
 #include <string>
 
 #include "part.h"
@@ -14,7 +15,10 @@ public:
 	char doesExist(std::string fileName);
 	char deleteFile(std::string fileName);
 	char readRootDir(EntryNum entryNumber, Directory & directory);
+	char format();
 private:
 	Partition *partition;
+	std::unordered_map<ClusterNo, char*> clusterCache;
+	char* fetchClusterFromCache(ClusterNo clusterNumber);
 };
 

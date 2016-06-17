@@ -31,3 +31,4 @@ int findFirstNotSet(char *bitVector, ClusterNo numberOfClusters) {
 	// no free clusters
 	return -1;
 }
+
