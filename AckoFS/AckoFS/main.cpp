@@ -3,6 +3,7 @@
 #include "part.h"
 #include "fs.h"
 #include "BitVector.h"
+#include "KernelCluster.h"
 
 // link the partition library
 #pragma comment(lib, "part.lib")
@@ -28,7 +29,7 @@ int main(void) {
 
 	// bitVector testing...
 	char *bitVector = new char[2048];
-	memset(bitVector, 0, sizeof(bitVector));
+	memset(bitVector, 0, 2048);
 	cout << "bitVectorIdx(10) = " << bitVectorIdx(10) << endl;
 	cout << "bitVectorPos(10) = " << bitVectorPos(10) << endl;
 	cout << "bitVectorPos(8) = " << bitVectorPos(8) << endl;
@@ -42,12 +43,31 @@ int main(void) {
 	cout << "findFirstNotSet = " << findFirstNotSet(bitVector, 2048) << endl;
 
 	p1->readCluster(0, bitVector);
+
+
 	for (int i = 0; i < 10; i++) {
 		printf("%d ", static_cast<int>(static_cast<unsigned char>(bitVector[i])));
 	}
 	printf("\n");
 
 	cout << "findFirstNotSet from partition = " << findFirstNotSet(bitVector, 2048) << endl;
+
+	KernelCluster kernelCluster(bitVector);
+	Entry entry;
+	// find a way to copy string as bytes, not as string, it adds '\0' at the end which you don't need
+	strcpy_s(entry.name, "ivanovi"); //c
+	strcpy_s(entry.ext, "co"); //a
+	entry.reserved = 0;
+	entry.indexCluster = 42L;
+	entry.size = 666L;
+
+	kernelCluster.writeClusterEntry(entry);
+	kernelCluster.seek(0);
+
+	auto entry2 = kernelCluster.readClusterEntry();
+
+	puts(entry2.name);
+	puts(entry2.ext);
 
 	return 0;
 }

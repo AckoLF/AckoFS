@@ -60,6 +60,7 @@ char * KernelPartition::fetchClusterFromCache(ClusterNo clusterNumber) {
 void KernelPartition::dropClusterFromCache(ClusterNo clusterNumber) {
 	auto iterator = clusterCache.find(clusterNumber);
 	if (iterator != clusterCache.end()) {
+		// wait, there is more, update bitvector!
 		clusterCache.erase(iterator);
 	}
 }
