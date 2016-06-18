@@ -62,7 +62,8 @@ char KernelPartition::readRootDir(EntryNum entryNumber, Directory & directory) {
 	for (const auto& fileEntry : fileEntries) {
 		cout << fileEntry.first << " " << fileEntry.second->toString() << endl;
 	}
-	return 0;
+	createRootDirectoryIndex();
+	return '1';
 }
 
 char KernelPartition::format() {
@@ -111,4 +112,68 @@ void KernelPartition::saveClusterToPartition(ClusterNo clusterNumber) {
 	} else {
 		// this is very bad, fatal error
 	}
+}
+
+void KernelPartition::createRootDirectoryIndex() {
+	// this should be stored inside cluster 1
+	// fill it with random bullshit and test if this works 
+	// then fill it with many many files and test if this works ;)
+	auto cashedCluster = fetchClusterFromCache(1);
+
+
+	for (int i = 0; i < 25; i++) {
+		printf("%d ", static_cast<int>(static_cast<unsigned char>(cashedCluster[i])));
+	}
+	printf("\n");
+
+	KernelCluster cluster(cashedCluster);
+	// entries should start from 0, 20, 40, ..., 1000
+	// then 1020-1024 is empty
+	// then pointers... 
+
+	// beware if there is random data
+	while (cluster.getPosition() != 1020) {
+		if (cluster.peekByte() != 0) {
+			// there is something here
+			auto clusterEntry = cluster.readClusterEntry();
+			cout << clusterEntry.toString() << " i can read this" << endl;
+			// add this to files
+		}
+		else {
+			// nothing to read, EOF
+			break;
+		}
+	}
+	if (cluster.getPosition() == 1020) {
+		cluster.readNumber();
+		// skip 4 bytes of noise
+	}
+	cout << cluster.getPosition() << endl;
+	while (cluster.getPosition() != 2048) {
+		if (cluster.peekNumber() != 0) {
+			// there is something here
+			auto secondLevelClusterIndex = cluster.readNumber();
+			auto cachedSecondLevelCluster = fetchClusterFromCache(secondLevelClusterIndex);
+			KernelCluster secondLevelCluster(cachedSecondLevelCluster);
+			cout << "index is: " << secondLevelClusterIndex << endl;
+			while (secondLevelCluster.getPosition() != 2040) {
+				if (secondLevelCluster.peekByte() != 0) {
+					// there is a file
+					auto clusterEntry = secondLevelCluster.readClusterEntry();
+					cout << clusterEntry.toString() << " this is some second level shit here" << endl;
+					// add this =)
+					break;
+				}
+				else {
+					break;
+				}
+			}
+		}
+		else {
+			// nothing to read, EOF
+	
+			break;
+		}
+	}
+	// read pointers then read clusters 
 }

@@ -1,5 +1,9 @@
 #include "KernelCluster.h"
 
+#include <iostream>
+
+using namespace std;
+
 KernelCluster::KernelCluster(char * cluster) {
 	this->cluster = cluster;
 	this->position = 0U;
@@ -71,4 +75,5 @@ void KernelCluster::writeClusterEntry(Entry clusterEntry) {
 	writeByte(clusterEntry.reserved);
 	writeNumber(clusterEntry.indexCluster);
 	writeNumber(clusterEntry.size);
+	cout << "WHAT IS THIS ? " << position << endl;
 }

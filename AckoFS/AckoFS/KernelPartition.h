@@ -6,6 +6,7 @@
 #include "part.h"
 #include "file.h"
 #include "BitVector.h"
+#include "KernelCluster.h"
 
 typedef std::string FileName;
 
@@ -29,5 +30,7 @@ private:
 	void saveClusterToPartition(ClusterNo clusterNumber);
 	// need to add some files bro
 	std::unordered_map<FileName, Entry*> fileEntries;
+	// also handle index
+	void createRootDirectoryIndex();
 };
 

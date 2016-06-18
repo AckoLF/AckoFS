@@ -13,11 +13,7 @@ using namespace std;
 int main(void) {
 	cout << "Hello, my name is AckoFS! :)" << endl;
 	auto p1 = new Partition("p1.ini");
-	char * buffer1 = "acko", *buffer2 = new char[2048];
-	//p1->writeCluster(5, buffer1);
-	//p1->readCluster(5, buffer2);
-	puts(buffer1);
-	puts(buffer2);
+
 	cout << "Partition p1 created!" << endl;
 	auto result = FS::mount(p1);
 	cout << "P1 mounted at: " << result << endl;
@@ -59,6 +55,12 @@ int main(void) {
 	entry.indexCluster = 42L;
 	entry.size = 666L;
 
+	Entry secondEntry;
+	secondEntry.splitRelativePath("vinjak.xyz");
+	secondEntry.reserved = 0;
+	secondEntry.indexCluster = 666L;
+	secondEntry.size = 42L;
+
 	//kernelCluster.writeClusterEntry(entry);
 	//kernelCluster.seek(0);
 
@@ -71,16 +73,39 @@ int main(void) {
 
 	// let's make a file yo!
 
+
+	// .................................. ludi vukovi
+	auto rootDirectoryIndex = new char[2048];
+	memset(rootDirectoryIndex, 0, 2048);
+
+	KernelCluster rootDirectoryCluster(rootDirectoryIndex);
+	for (int i = 0; i < 51; i++) {
+		rootDirectoryCluster.writeClusterEntry(entry);
+	}
+	rootDirectoryCluster.writeNumber(0);
+	rootDirectoryCluster.writeNumber(2);
+
+	p1->writeCluster(1, rootDirectoryIndex);
+
+	auto secondLevelShit = new char[2048];
+	memset(secondLevelShit, 0, 2048);
+	KernelCluster secondLevelCluster(secondLevelShit);
+	secondLevelCluster.writeClusterEntry(secondEntry);
+
+	p1->writeCluster(2, secondLevelShit);
+
+	// .................................. like i ceste sinovi
 	FS::open("A:\\acko.txt", 'w');
 	FS::open("A:\\nijeacko.txt", 'r');
 	Directory d;
+	cout << "yo! readRootDir bro!" << endl;
 	FS::readRootDir('A', 5, d);
 
-	cout << FS::doesExist("A:\\acko.txt") << endl;
+	cout << "doesExist(true): " << FS::doesExist("A:\\acko.txt") << endl;
 	result = FS::unmount('A');
 	cout << "P1 unmonuted: " << result << endl;
-	cout << FS::doesExist("A:\\acko.txt") << endl;
-	FS::open("A:\\wtf.xyz", 'w');
+	cout << "doesExist(false): " << FS::doesExist("A:\\acko.txt") << endl;
+	cout << "should not open: " << FS::open("A:\\wtf.xyz", 'w') << endl;
 	cout << "Goodbye, dear user! :(" << endl;
 
 	return 0;

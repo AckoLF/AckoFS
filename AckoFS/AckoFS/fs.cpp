@@ -57,7 +57,13 @@ char FS::deleteFile(char *fname) {
 void Entry::splitRelativePath(std::string relativePath) {
 	auto position = relativePath.find('.');
 	memcpy(name, relativePath.data(), position);
+	for (int i = position; i < FNAMELEN; i++) {
+		name[i] = ' ';
+	}
 	memcpy(ext, relativePath.substr(position + 1).data(), relativePath.length() - position - 1);
+	for (int i = relativePath.length() - position - 1; i < FEXTLEN; i++) {
+		ext[i] = ' ';
+	}
 }
 
 std::string Entry::getRelativePath() {
