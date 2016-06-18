@@ -15,7 +15,7 @@ void KernelCluster::seek(unsigned int position) {
 
 char KernelCluster::readByte() {
 	if (position >= 2048U) {
-		// actually implement eof please
+		// actually implement eof please, or should you? it should be faaaaaast...
 		throw "up";
 	}
 	return cluster[position++];
@@ -35,6 +35,16 @@ unsigned long KernelCluster::readNumber() {
 void KernelCluster::writeNumber(unsigned long number) {
 	memcpy(cluster + position, &number, 4);
 	position += 4;
+}
+
+char KernelCluster::peekByte() {
+	return cluster[position];
+}
+
+unsigned long KernelCluster::peekNumber() {
+	unsigned long result;
+	memcpy(&result, cluster + position, 4);
+	return result;
 }
 
 Entry KernelCluster::readClusterEntry() {

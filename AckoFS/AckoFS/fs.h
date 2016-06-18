@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 // File: fs.h
 typedef unsigned long BytesCnt;
 typedef unsigned long EntryNum;
@@ -14,6 +16,9 @@ struct Entry {
 	char reserved;
 	unsigned long indexCluster;
 	unsigned long size;
+	void splitRelativePath(std::string relativePath);
+	std::string getRelativePath();
+	std::string toString();
 };
 
 typedef Entry Directory[ENTRYCNT];

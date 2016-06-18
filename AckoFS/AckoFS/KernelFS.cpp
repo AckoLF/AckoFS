@@ -74,6 +74,7 @@ File * KernelFS::open(char *fileName, char mode) {
 	// fileName ~ A:\foo.bar
 	auto fileNameString = string(fileName);
 	auto filePath = fileNameString.substr(3);
+	cout << fileNameString << " ... " << filePath << endl;
 	return partition->open(filePath, mode);
 }
 

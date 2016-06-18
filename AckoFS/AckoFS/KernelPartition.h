@@ -7,6 +7,8 @@
 #include "file.h"
 #include "BitVector.h"
 
+typedef std::string FileName;
+
 class KernelPartition
 {
 public:
@@ -19,9 +21,13 @@ public:
 	char format();
 private:
 	Partition *partition;
+	unsigned int numberOfClusters;
+	unsigned int rootDirectoryIndexStart;
 	std::unordered_map<ClusterNo, char*> clusterCache;
 	char* fetchClusterFromCache(ClusterNo clusterNumber);
 	void dropClusterFromCache(ClusterNo clusterNumber);
 	void saveClusterToPartition(ClusterNo clusterNumber);
+	// need to add some files bro
+	std::unordered_map<FileName, Entry*> fileEntries;
 };
 

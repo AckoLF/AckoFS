@@ -17,6 +17,8 @@ public:
 	void writeByte(char byte);
 	unsigned long readNumber();
 	void writeNumber(unsigned long number);
+	char peekByte();
+	unsigned long peekNumber();
 	Entry readClusterEntry();
 	void writeClusterEntry(Entry clusterEntry);
 };

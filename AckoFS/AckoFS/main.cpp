@@ -14,8 +14,8 @@ int main(void) {
 	cout << "Hello, my name is AckoFS! :)" << endl;
 	auto p1 = new Partition("p1.ini");
 	char * buffer1 = "acko", *buffer2 = new char[2048];
-	p1->writeCluster(5, buffer1);
-	p1->readCluster(5, buffer2);
+	//p1->writeCluster(5, buffer1);
+	//p1->readCluster(5, buffer2);
 	puts(buffer1);
 	puts(buffer2);
 	cout << "Partition p1 created!" << endl;
@@ -23,10 +23,7 @@ int main(void) {
 	cout << "P1 mounted at: " << result << endl;
 	result = FS::format('A');
 	cout << "P1 formated: " << result << endl;
-	result = FS::unmount('A');
-	cout << "P1 unmonuted: " << result << endl;
-	cout << "Goodbye, dear user! :(" << endl;
-
+	
 	// bitVector testing...
 	char *bitVector = new char[2048];
 	memset(bitVector, 0, 2048);
@@ -50,24 +47,37 @@ int main(void) {
 	}
 	printf("\n");
 
+
 	cout << "findFirstNotSet from partition = " << findFirstNotSet(bitVector, 2048) << endl;
 
 	KernelCluster kernelCluster(bitVector);
 	Entry entry;
 	// find a way to copy string as bytes, not as string, it adds '\0' at the end which you don't need
-	strcpy_s(entry.name, "ivanovi"); //c
-	strcpy_s(entry.ext, "co"); //a
+	memcpy(entry.name, "ivanovic", 8); //c
+	memcpy(entry.ext, "coa", 3); //a, hehe
 	entry.reserved = 0;
 	entry.indexCluster = 42L;
 	entry.size = 666L;
 
-	kernelCluster.writeClusterEntry(entry);
-	kernelCluster.seek(0);
+	//kernelCluster.writeClusterEntry(entry);
+	//kernelCluster.seek(0);
 
-	auto entry2 = kernelCluster.readClusterEntry();
+	//auto entry2 = kernelCluster.readClusterEntry();
 
-	puts(entry2.name);
-	puts(entry2.ext);
+	//puts(entry2.name);
+	//puts(entry2.ext);
+
+	cout <<	entry.getRelativePath() << endl;
+
+	// let's make a file yo!
+
+	FS::open("A:\\acko.txt", 'w');
+	FS::open("A:\\nijeacko.txt", 'r');
+	result = FS::unmount('A');
+	Directory d;
+	FS::readRootDir('A', 5, d);
+	cout << "P1 unmonuted: " << result << endl;
+	cout << "Goodbye, dear user! :(" << endl;
 
 	return 0;
 }

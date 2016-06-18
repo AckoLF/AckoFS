@@ -1,9 +1,13 @@
 #include "KernelPartition.h"
 
+#include <iostream>
+
 using namespace std;
 
 KernelPartition::KernelPartition(Partition *partition) {
 	this->partition = partition;
+	this->numberOfClusters = partition->getNumOfClusters();
+	this->rootDirectoryIndexStart = this->numberOfClusters / 8;
 }
 
 KernelPartition::~KernelPartition() {
@@ -11,6 +15,31 @@ KernelPartition::~KernelPartition() {
 }
 
 File * KernelPartition::open(string fileName, char mode) {
+	// for now handle only write mode 
+	// use ReaderWriter locks please here ;)
+	// http://stackoverflow.com/questions/13064474/what-could-cause-a-deadlock-of-a-single-write-multiple-read-lock
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms686360(v=vs.85).aspx
+	// https://msdn.microsoft.com/en-us/library/dd759350.aspx
+
+	// maybe read root index (?)
+	// this code is actually createFile function :) 
+
+	Entry *fileEntry = new Entry();
+
+	// find a cluster for the file
+	// separate into a function
+
+	auto bitVector = fetchClusterFromCache(0);
+	auto fileCluster = findFirstNotSet(bitVector, 2048);
+	cout << "fileCluster is " << fileCluster << endl;
+	// take it
+	setBitValue(bitVector, fileCluster, true);
+
+	fileEntry->splitRelativePath(fileName);
+	fileEntry->reserved = 0;
+	fileEntry->indexCluster = fileCluster;
+	fileEntry->size = 0;
+	fileEntries.insert({ fileName, fileEntry });
 	return nullptr;
 }
 
@@ -23,6 +52,9 @@ char KernelPartition::deleteFile(std::string fileName) {
 }
 
 char KernelPartition::readRootDir(EntryNum entryNumber, Directory & directory) {
+	for (const auto& fileEntry : fileEntries) {
+		cout << fileEntry.first << " " << fileEntry.second->toString() << endl;
+	}
 	return 0;
 }
 
