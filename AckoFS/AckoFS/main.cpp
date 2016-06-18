@@ -73,10 +73,14 @@ int main(void) {
 
 	FS::open("A:\\acko.txt", 'w');
 	FS::open("A:\\nijeacko.txt", 'r');
-	result = FS::unmount('A');
 	Directory d;
 	FS::readRootDir('A', 5, d);
+
+	cout << FS::doesExist("A:\\acko.txt") << endl;
+	result = FS::unmount('A');
 	cout << "P1 unmonuted: " << result << endl;
+	cout << FS::doesExist("A:\\acko.txt") << endl;
+	FS::open("A:\\wtf.xyz", 'w');
 	cout << "Goodbye, dear user! :(" << endl;
 
 	return 0;

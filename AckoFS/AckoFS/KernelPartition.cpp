@@ -44,7 +44,14 @@ File * KernelPartition::open(string fileName, char mode) {
 }
 
 char KernelPartition::doesExist(std::string fileName) {
-	return 0;
+	// maybe read root directory?
+	auto iterator = fileEntries.find(fileName);
+	if (iterator == fileEntries.end()) {
+		return '0';
+	}
+	else {
+		return '1';
+	}
 }
 
 char KernelPartition::deleteFile(std::string fileName) {

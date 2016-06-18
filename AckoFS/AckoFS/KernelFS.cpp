@@ -49,8 +49,10 @@ char KernelFS::mount(Partition *partition) {
 char KernelFS::unmount(char partitionSymbol) {
 	// return '0' if already a nullptr?
 	auto partition = getPartition(partitionSymbol);
+	cout << partitionSymbol << " ?!?!? " << endl;
+	cout << partition << endl;
 	if (partition != nullptr) {
-		partition.reset();
+		mountedPartitions[partitionSymbol - 'A'] = nullptr;
 		return '1';
 	}
 	else {
@@ -69,6 +71,7 @@ File * KernelFS::open(char *fileName, char mode) {
 	auto partition = getPartition(partitionSymbol);
 	// illegal partition name or unmounted partition
 	if (partition == nullptr) {
+		cout << "no can open" << endl;
 		return nullptr;
 	}
 	// fileName ~ A:\foo.bar
