@@ -19,6 +19,9 @@ int main(void) {
 	cout << "P1 mounted at: " << result << endl;
 	result = FS::format('A');
 	cout << "P1 formated: " << result << endl;
+
+	// rip kesiranje
+	// rip sinhronizacija for now
 	
 	// bitVector testing...
 	char *bitVector = new char[2048];
@@ -36,7 +39,6 @@ int main(void) {
 	cout << "findFirstNotSet = " << findFirstNotSet(bitVector, 2048) << endl;
 
 	p1->readCluster(0, bitVector);
-
 
 	for (int i = 0; i < 10; i++) {
 		printf("%d ", static_cast<int>(static_cast<unsigned char>(bitVector[i])));

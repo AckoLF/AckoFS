@@ -76,6 +76,8 @@ char KernelPartition::format() {
 	// hahaha, mlatka, sizeof ne radi
 	memset(bitVector, 0, 2048);
 	setBitValue(bitVector, 0, true);
+	// write root index 
+	setBitValue(bitVector, 1, true);
 	partition->writeCluster(0, bitVector);
 
 	clusterCache.clear();
