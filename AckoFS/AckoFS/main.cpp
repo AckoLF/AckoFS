@@ -10,44 +10,42 @@
 
 using namespace std;
 
+void bitVectorTest() {
+	cout << "=== bitVectorTest start ===" << endl;
+	char *bitVector = new char[2048];
+	memset(bitVector, 0, 2048);
+	for (int i = 0; i < 2048; i++) {
+		setBitValue(bitVector, i, true);
+	}
+	setBitValue(bitVector, 666, false);
+	cout << "findFirstNotSet(666) = " << findFirstNotSet(bitVector, 2048) << endl;
+	setBitValue(bitVector, 666, true);
+	cout << "findFirstNotSet(NO_FREE_CLUSTERS) = " << findFirstNotSet(bitVector, 2048) << endl;
+	cout << "=== bitVectorTest end ===" << endl;
+}
+
+void clusterPartitionTest() {
+
+}
+
+void rootDirectoryTest() {
+
+}
+
 int main(void) {
+	bitVectorTest();
+
 	cout << "Hello, my name is AckoFS! :)" << endl;
 	auto p1 = new Partition("p1.ini");
 
 	cout << "Partition p1 created!" << endl;
 	auto result = FS::mount(p1);
 	cout << "P1 mounted at: " << result << endl;
-	result = FS::format('A');
+	//result = FS::format('A');
 	cout << "P1 formated: " << result << endl;
-
-	// rip kesiranje
-	// rip sinhronizacija for now
 	
-	// bitVector testing...
-	char *bitVector = new char[2048];
-	memset(bitVector, 0, 2048);
-	cout << "bitVectorIdx(10) = " << bitVectorIdx(10) << endl;
-	cout << "bitVectorPos(10) = " << bitVectorPos(10) << endl;
-	cout << "bitVectorPos(8) = " << bitVectorPos(8) << endl;
-	cout << "bitVectorPos(15) = " << bitVectorPos(15) << endl;
-	setBitValue(bitVector, 0, true);
-	setBitValue(bitVector, 7, true);
-	setBitValue(bitVector, 0, false);
-	setBitValue(bitVector, 0, true);
-	auto bitVector0 = static_cast<int>(static_cast<unsigned char>(bitVector[0]));
-	cout << "bitVector0 = " << bitVector0 << endl;
-	cout << "findFirstNotSet = " << findFirstNotSet(bitVector, 2048) << endl;
-
-	p1->readCluster(0, bitVector);
-
-	for (int i = 0; i < 10; i++) {
-		printf("%d ", static_cast<int>(static_cast<unsigned char>(bitVector[i])));
-	}
-	printf("\n");
-
-
-	cout << "findFirstNotSet from partition = " << findFirstNotSet(bitVector, 2048) << endl;
-
+	return 0;
+	/*
 	KernelCluster kernelCluster(bitVector);
 	Entry entry;
 	// find a way to copy string as bytes, not as string, it adds '\0' at the end which you don't need
@@ -81,7 +79,7 @@ int main(void) {
 	memset(rootDirectoryIndex, 0, 2048);
 
 	KernelCluster rootDirectoryCluster(rootDirectoryIndex);
-	for (int i = 0; i < 51; i++) {
+	for (int i = 0; i < 2048; i++) {
 		rootDirectoryCluster.writeClusterEntry(entry);
 	}
 	rootDirectoryCluster.writeNumber(0);
@@ -109,6 +107,6 @@ int main(void) {
 	cout << "doesExist(false): " << FS::doesExist("A:\\acko.txt") << endl;
 	cout << "should not open: " << FS::open("A:\\wtf.xyz", 'w') << endl;
 	cout << "Goodbye, dear user! :(" << endl;
-
+	*/
 	return 0;
 }

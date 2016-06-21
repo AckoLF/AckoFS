@@ -4,19 +4,19 @@
 // https://en.wikipedia.org/wiki/Fast_inverse_square_root
 
 void setBitValue(char *bitVector, ClusterNo clusterNumber, bool value) {
-	bitVector[bitVectorIdx(clusterNumber)] ^= ((-value) ^ bitVector[bitVectorIdx(clusterNumber)]) & (1U << bitVectorPos(clusterNumber));
+	bitVector[bitVectorIdx(clusterNumber)] ^= ((-(value)) ^ bitVector[bitVectorIdx(clusterNumber)]) & (1U << bitVectorPos(clusterNumber));
 }
 
 bool getBitValue(char *bitVector, ClusterNo clusterNumber) {
 	return bitVector[bitVectorIdx(clusterNumber)] & (1U << bitVectorPos(clusterNumber));
 }
 
-int findFirstNotSet(char *bitVector, ClusterNo numberOfClusters) {
+unsigned int findFirstNotSet(char *bitVector, ClusterNo numberOfClusters) {
 	auto bitVectorIndex = 0U;
 	numberOfClusters >>= 3U;
 	while (bitVectorIndex != numberOfClusters) {
 		auto bitVectorValue = static_cast<unsigned char>((~(static_cast<unsigned char>(bitVector[bitVectorIndex]))));
-		if (bitVectorValue != 0xFF) {
+		if (bitVectorValue != 0U) {
 			auto bitVectorPosition = 8U;
 			while (bitVectorValue != 0U) {
 				bitVectorValue >>= 1U; 
@@ -28,7 +28,6 @@ int findFirstNotSet(char *bitVector, ClusterNo numberOfClusters) {
 			bitVectorIndex++;
 		}
 	}
-	// no free clusters
-	return -1;
+	return std::numeric_limits<unsigned int>::max();
 }
 

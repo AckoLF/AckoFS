@@ -1,7 +1,5 @@
 #include "KernelFile.h"
 
-
-
 KernelFile::KernelFile() {
 }
 

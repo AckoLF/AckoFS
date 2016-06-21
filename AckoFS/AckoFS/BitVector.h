@@ -2,9 +2,9 @@
 
 #include "part.h"
 
-// TODO(acko)
-// 0 should be taken, 1 should be free
-// what the flying fuck !?
+#include <limits>
+
+// TODO(acko) : Should you invert the bits or should you not?
 
 #define bitVectorIdx(clusterNumber) ((clusterNumber) / 8U)
 #define bitVectorPos(clusterNumber) (7U - ((clusterNumber) & 7U))
@@ -12,5 +12,5 @@
 
 void setBitValue(char *bitVector, ClusterNo clusterNumber, bool value);
 bool getBitValue(char *bitVector, ClusterNo clusterNumber);
-int findFirstNotSet(char *bitVector, ClusterNo numberOfClusters);
+unsigned int findFirstNotSet(char *bitVector, ClusterNo numberOfClusters);
 

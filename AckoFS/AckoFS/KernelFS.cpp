@@ -47,10 +47,7 @@ char KernelFS::mount(Partition *partition) {
 }
 
 char KernelFS::unmount(char partitionSymbol) {
-	// return '0' if already a nullptr?
 	auto partition = getPartition(partitionSymbol);
-	cout << partitionSymbol << " ?!?!? " << endl;
-	cout << partition << endl;
 	if (partition != nullptr) {
 		mountedPartitions[partitionSymbol - 'A'] = nullptr;
 		return '1';
@@ -60,7 +57,6 @@ char KernelFS::unmount(char partitionSymbol) {
 	}
 }
 
-// TODO(acko): Implement format
 char KernelFS::format(char partitionSymbol) {
 	auto partition = getPartition(partitionSymbol);
 	return partition->format();

@@ -22,15 +22,14 @@ public:
 	char format();
 private:
 	Partition *partition;
-	unsigned int numberOfClusters;
-	unsigned int rootDirectoryIndexStart;
-	std::unordered_map<ClusterNo, char*> clusterCache;
-	char* fetchClusterFromCache(ClusterNo clusterNumber);
-	void dropClusterFromCache(ClusterNo clusterNumber);
-	void saveClusterToPartition(ClusterNo clusterNumber);
+	ClusterNo numberOfClusters;
+	char* fetchClusterFromPartition(ClusterNo clusterNumber);
+	void saveClusterToPartition(ClusterNo clusterNumber, char *cluster);
+	bool isRootDirectoryIndexCorrupted();
 	// need to add some files bro
 	std::unordered_map<FileName, Entry*> fileEntries;
 	// also handle index
-	void createRootDirectoryIndex();
+	char* createRootDirectoryIndex();
+	void readRootDirectoryIndex();
 };
 

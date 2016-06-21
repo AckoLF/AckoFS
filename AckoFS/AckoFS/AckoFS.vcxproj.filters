@@ -84,6 +84,5 @@
     <None Include="p2.ini">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="cpplint.py" />
   </ItemGroup>
 </Project>

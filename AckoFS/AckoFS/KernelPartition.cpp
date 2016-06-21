@@ -7,11 +7,17 @@ using namespace std;
 KernelPartition::KernelPartition(Partition *partition) {
 	this->partition = partition;
 	this->numberOfClusters = partition->getNumOfClusters();
-	this->rootDirectoryIndexStart = this->numberOfClusters / 8;
+
+	if (isRootDirectoryIndexCorrupted()) {
+		cout << "Partition is corrupted! Need to format it." << endl;
+		this->format();
+	} else {
+		cout << "Partition is not corrupted!" << endl;
+	}
 }
 
 KernelPartition::~KernelPartition() {
-	// wait for all files to be closed!
+	// TODO(acko): Wait for all files to be closed.
 }
 
 File * KernelPartition::open(string fileName, char mode) {
@@ -29,17 +35,22 @@ File * KernelPartition::open(string fileName, char mode) {
 	// find a cluster for the file
 	// separate into a function
 
-	auto bitVector = fetchClusterFromCache(0);
+	auto bitVector = new char[2048];
+	partition->readCluster(0, bitVector);
 	auto fileCluster = findFirstNotSet(bitVector, 2048);
 	cout << "fileCluster is " << fileCluster << endl;
 	// take it
 	setBitValue(bitVector, fileCluster, true);
+	partition->writeCluster(0, bitVector);
 
 	fileEntry->splitRelativePath(fileName);
 	fileEntry->reserved = 0;
 	fileEntry->indexCluster = fileCluster;
 	fileEntry->size = 0;
 	fileEntries.insert({ fileName, fileEntry });
+
+	// create file and return it
+
 	return nullptr;
 }
 
@@ -66,69 +77,57 @@ char KernelPartition::readRootDir(EntryNum entryNumber, Directory & directory) {
 	return '1';
 }
 
-char KernelPartition::format() {
-	// clear cache
-	// set bit vector
-
-	// wait for all files to be closed!
-
+char KernelPartition::format() {	
+	// TODO(acko): Wait for all files to be closed.
 	auto bitVector = new char[2048];
-	// hahaha, mlatka, sizeof ne radi
 	memset(bitVector, 0, 2048);
 	setBitValue(bitVector, 0, true);
-	// write root index 
 	setBitValue(bitVector, 1, true);
 	partition->writeCluster(0, bitVector);
-
-	clusterCache.clear();
+	auto rootDirectoryIndex = createRootDirectoryIndex();
+	partition->writeCluster(1, rootDirectoryIndex);
 	return 0;
 }
 
-char * KernelPartition::fetchClusterFromCache(ClusterNo clusterNumber) {
-	auto iterator = clusterCache.find(clusterNumber);
-	if (iterator != clusterCache.end()) {
-		return iterator->second;
-	}
-	else {
-		auto cluster = new char[2048];
-		partition->readCluster(clusterNumber, cluster);
-		auto cachedCluster = new char[2048];
-		memcpy(cachedCluster, cluster, 2048);
-		clusterCache.insert({ clusterNumber, cachedCluster });
-		return cachedCluster;
-	}
+char* KernelPartition::fetchClusterFromPartition(ClusterNo clusterNumber) {
+	auto cluster = new char[2048];
+	partition->readCluster(clusterNumber, cluster);
+	return cluster;
 }
 
-void KernelPartition::dropClusterFromCache(ClusterNo clusterNumber) {
-	auto iterator = clusterCache.find(clusterNumber);
-	if (iterator != clusterCache.end()) {
-		// wait, there is more, update bitvector!
-		clusterCache.erase(iterator);
-	}
+void KernelPartition::saveClusterToPartition(ClusterNo clusterNumber, char *cluster) {
+	partition->writeCluster(clusterNumber, cluster);
 }
 
-void KernelPartition::saveClusterToPartition(ClusterNo clusterNumber) {
-	auto iterator = clusterCache.find(clusterNumber);
-	if (iterator != clusterCache.end()) {
-		partition->writeCluster(clusterNumber, iterator->second);
-	} else {
-		// this is very bad, fatal error
-	}
+bool KernelPartition::isRootDirectoryIndexCorrupted() {
+	// bytes [1020, 1024) inside rootDirectoryIndex should be equal to acko
+	auto partitionCluster = fetchClusterFromPartition(1);
+	auto cluster = KernelCluster(partitionCluster);
+	cluster.seek(1020);
+	auto acko = cluster.readNumber();
+	return acko != 1869308769UL;
 }
 
-void KernelPartition::createRootDirectoryIndex() {
+char* KernelPartition::createRootDirectoryIndex() {
+	auto partitionCluster = new char[2048];
+	memset(partitionCluster, 0, 2048);
+	auto cluster = KernelCluster(partitionCluster);
+	cluster.seek(1020);
+	cluster.writeByte('a');
+	cluster.writeByte('c');
+	cluster.writeByte('k');
+	cluster.writeByte('o');
+	return partitionCluster;
+}
+
+void KernelPartition::readRootDirectoryIndex() {
 	// this should be stored inside cluster 1
 	// fill it with random bullshit and test if this works 
 	// then fill it with many many files and test if this works ;)
-	auto cashedCluster = fetchClusterFromCache(1);
 
+	auto partitionCluster = fetchClusterFromPartition(1);
 
-	for (int i = 0; i < 25; i++) {
-		printf("%d ", static_cast<int>(static_cast<unsigned char>(cashedCluster[i])));
-	}
-	printf("\n");
-
-	KernelCluster cluster(cashedCluster);
+	KernelCluster cluster(partitionCluster);
 	// entries should start from 0, 20, 40, ..., 1000
 	// then 1020-1024 is empty
 	// then pointers... 
@@ -138,7 +137,6 @@ void KernelPartition::createRootDirectoryIndex() {
 		if (cluster.peekByte() != 0) {
 			// there is something here
 			auto clusterEntry = cluster.readClusterEntry();
-			cout << clusterEntry.toString() << " i can read this" << endl;
 			// add this to files
 		}
 		else {
@@ -155,7 +153,7 @@ void KernelPartition::createRootDirectoryIndex() {
 		if (cluster.peekNumber() != 0) {
 			// there is something here
 			auto secondLevelClusterIndex = cluster.readNumber();
-			auto cachedSecondLevelCluster = fetchClusterFromCache(secondLevelClusterIndex);
+			auto cachedSecondLevelCluster = fetchClusterFromPartition(secondLevelClusterIndex);
 			KernelCluster secondLevelCluster(cachedSecondLevelCluster);
 			cout << "index is: " << secondLevelClusterIndex << endl;
 			while (secondLevelCluster.getPosition() != 2040) {
