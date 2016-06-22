@@ -67,7 +67,6 @@ void Entry::splitRelativePath(std::string relativePath) {
 }
 
 std::string Entry::getRelativePath() {
-	// make this a function for real now
 	char name0[FNAMELEN + 1];
 	memcpy(name0, name, FNAMELEN);
 	int length = FNAMELEN;
@@ -86,6 +85,5 @@ std::string Entry::getRelativePath() {
 }
 
 std::string Entry::toString() {
-	// for now it should suffice .
-	return getRelativePath() + " --- " + std::to_string(indexCluster);
+	return "Entry toString() -> " + getRelativePath() + " firstLevelCluster = " + std::to_string(indexCluster);
 }

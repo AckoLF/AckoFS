@@ -11,7 +11,7 @@
 using namespace std;
 
 void bitVectorTest() {
-	cout << "=== bitVectorTest start ===" << endl;
+	cout << "===== bitVectorTest start =====" << endl;
 	char *bitVector = new char[2048];
 	memset(bitVector, 0, 2048);
 	for (int i = 0; i < 2048; i++) {
@@ -21,7 +21,7 @@ void bitVectorTest() {
 	cout << "findFirstNotSet(666) = " << findFirstNotSet(bitVector, 2048) << endl;
 	setBitValue(bitVector, 666, true);
 	cout << "findFirstNotSet(NO_FREE_CLUSTERS) = " << findFirstNotSet(bitVector, 2048) << endl;
-	cout << "=== bitVectorTest end ===" << endl;
+	cout << "===== bitVectorTest end   =====" << endl;
 }
 
 void clusterPartitionTest() {
@@ -33,80 +33,44 @@ void rootDirectoryTest() {
 }
 
 int main(void) {
-	bitVectorTest();
+	// bitVectorTest();
 
 	cout << "Hello, my name is AckoFS! :)" << endl;
 	auto p1 = new Partition("p1.ini");
+	auto p1Symbol = FS::mount(p1);
+	FS::format(p1Symbol);
+	cout << "P1 mounted at: " << p1Symbol << endl;
+	cout << "P1 formatted!" << endl;
+	char path1[42] = "1:\\fighters.foo";
+	path1[0] = p1Symbol;
 
-	cout << "Partition p1 created!" << endl;
-	auto result = FS::mount(p1);
-	cout << "P1 mounted at: " << result << endl;
-	//result = FS::format('A');
-	cout << "P1 formated: " << result << endl;
+	char path2[42] = "1:\\vinjak.xyz";
+	path2[0] = p1Symbol;
+
+	char path3[42] = "1:\\prodigy.wtf";
+	path3[0] = p1Symbol;
+
+	char path4[42] = "1:\\hooli.xyz";
+	path4[0] = p1Symbol;
+
+	auto file1 = FS::open(path1, 'r');
+	auto file2 = FS::open(path2, 'w');
+	auto file3 = FS::open(path3, 'a');
+
+	FS::deleteFile(path2);
+
+	auto file4 = FS::open(path4, 'a');
 	
-	return 0;
-	/*
-	KernelCluster kernelCluster(bitVector);
-	Entry entry;
-	// find a way to copy string as bytes, not as string, it adds '\0' at the end which you don't need
-	memcpy(entry.name, "ivanovic", 8); //c
-	memcpy(entry.ext, "coa", 3); //a, hehe
-	entry.reserved = 0;
-	entry.indexCluster = 42L;
-	entry.size = 666L;
-
-	Entry secondEntry;
-	secondEntry.splitRelativePath("vinjak.xyz");
-	secondEntry.reserved = 0;
-	secondEntry.indexCluster = 666L;
-	secondEntry.size = 42L;
-
-	//kernelCluster.writeClusterEntry(entry);
-	//kernelCluster.seek(0);
-
-	//auto entry2 = kernelCluster.readClusterEntry();
-
-	//puts(entry2.name);
-	//puts(entry2.ext);
-
-	cout <<	entry.getRelativePath() << endl;
-
-	// let's make a file yo!
-
-
-	// .................................. ludi vukovi
-	auto rootDirectoryIndex = new char[2048];
-	memset(rootDirectoryIndex, 0, 2048);
-
-	KernelCluster rootDirectoryCluster(rootDirectoryIndex);
-	for (int i = 0; i < 2048; i++) {
-		rootDirectoryCluster.writeClusterEntry(entry);
+	FS::deleteFile(path3);
+	
+	Entry directory[64];
+	auto count = static_cast<int>(FS::readRootDir(p1Symbol, 0, directory));
+	
+	cout << "Found " << count << " files" << endl;
+	for (auto i = 0; i < count; i++) {
+		auto entry = directory[i];
+		cout << entry.toString() << endl;
 	}
-	rootDirectoryCluster.writeNumber(0);
-	rootDirectoryCluster.writeNumber(2);
-
-	p1->writeCluster(1, rootDirectoryIndex);
-
-	auto secondLevelShit = new char[2048];
-	memset(secondLevelShit, 0, 2048);
-	KernelCluster secondLevelCluster(secondLevelShit);
-	secondLevelCluster.writeClusterEntry(secondEntry);
-
-	p1->writeCluster(2, secondLevelShit);
-
-	// .................................. like i ceste sinovi
-	FS::open("A:\\acko.txt", 'w');
-	FS::open("A:\\nijeacko.txt", 'r');
-	Directory d;
-	cout << "yo! readRootDir bro!" << endl;
-	FS::readRootDir('A', 5, d);
-
-	cout << "doesExist(true): " << FS::doesExist("A:\\acko.txt") << endl;
-	result = FS::unmount('A');
-	cout << "P1 unmonuted: " << result << endl;
-	cout << "doesExist(false): " << FS::doesExist("A:\\acko.txt") << endl;
-	cout << "should not open: " << FS::open("A:\\wtf.xyz", 'w') << endl;
-	cout << "Goodbye, dear user! :(" << endl;
-	*/
+	
 	return 0;
 }

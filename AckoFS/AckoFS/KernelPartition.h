@@ -31,5 +31,6 @@ private:
 	// also handle index
 	char* createRootDirectoryIndex();
 	void readRootDirectoryIndex();
+	void writeRootDirectoryIndex();
 };
 

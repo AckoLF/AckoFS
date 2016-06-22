@@ -67,13 +67,12 @@ File * KernelFS::open(char *fileName, char mode) {
 	auto partition = getPartition(partitionSymbol);
 	// illegal partition name or unmounted partition
 	if (partition == nullptr) {
-		cout << "no can open" << endl;
+		cout << "Partition is unmounted!" << endl;
 		return nullptr;
 	}
 	// fileName ~ A:\foo.bar
 	auto fileNameString = string(fileName);
 	auto filePath = fileNameString.substr(3);
-	cout << fileNameString << " ... " << filePath << endl;
 	return partition->open(filePath, mode);
 }
 

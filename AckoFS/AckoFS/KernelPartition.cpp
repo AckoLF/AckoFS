@@ -7,7 +7,6 @@ using namespace std;
 KernelPartition::KernelPartition(Partition *partition) {
 	this->partition = partition;
 	this->numberOfClusters = partition->getNumOfClusters();
-
 	if (isRootDirectoryIndexCorrupted()) {
 		cout << "Partition is corrupted! Need to format it." << endl;
 		this->format();
@@ -21,41 +20,26 @@ KernelPartition::~KernelPartition() {
 }
 
 File * KernelPartition::open(string fileName, char mode) {
-	// for now handle only write mode 
-	// use ReaderWriter locks please here ;)
+	// TODO(acko): Add synchronization and different file modes.
 	// http://stackoverflow.com/questions/13064474/what-could-cause-a-deadlock-of-a-single-write-multiple-read-lock
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms686360(v=vs.85).aspx
 	// https://msdn.microsoft.com/en-us/library/dd759350.aspx
-
-	// maybe read root index (?)
-	// this code is actually createFile function :) 
-
 	Entry *fileEntry = new Entry();
-
-	// find a cluster for the file
-	// separate into a function
-
 	auto bitVector = new char[2048];
 	partition->readCluster(0, bitVector);
-	auto fileCluster = findFirstNotSet(bitVector, 2048);
-	cout << "fileCluster is " << fileCluster << endl;
-	// take it
-	setBitValue(bitVector, fileCluster, true);
+	auto firstLevelIndex = findFirstNotSet(bitVector, 2048);
+	setBitValue(bitVector, firstLevelIndex, true);
 	partition->writeCluster(0, bitVector);
-
 	fileEntry->splitRelativePath(fileName);
 	fileEntry->reserved = 0;
-	fileEntry->indexCluster = fileCluster;
+	fileEntry->indexCluster = firstLevelIndex;
 	fileEntry->size = 0;
 	fileEntries.insert({ fileName, fileEntry });
-
-	// create file and return it
-
+	// TODO(acko): Create a File and return it
 	return nullptr;
 }
 
 char KernelPartition::doesExist(std::string fileName) {
-	// maybe read root directory?
 	auto iterator = fileEntries.find(fileName);
 	if (iterator == fileEntries.end()) {
 		return '0';
@@ -66,15 +50,49 @@ char KernelPartition::doesExist(std::string fileName) {
 }
 
 char KernelPartition::deleteFile(std::string fileName) {
-	return 0;
+	auto doesExist = this->doesExist(fileName);
+	if (!doesExist) {
+		cout << "File " << fileName << " does not exist!" << endl;
+		return '0';
+	}
+	auto iterator = fileEntries.find(fileName);
+	auto bitVector = fetchClusterFromPartition(0);
+	auto firstLevelIndex = iterator->second->indexCluster;
+	setBitValue(bitVector, firstLevelIndex, false);
+	auto firstLevelClusterPartition = fetchClusterFromPartition(firstLevelIndex);
+	auto firstLevelCluster = KernelCluster(firstLevelClusterPartition);
+	// TODO(acko): Do you need to delete everything?
+	firstLevelCluster.seek(1024);
+	while (firstLevelCluster.getPosition() != 2048) {
+		auto secondLevelIndex = firstLevelCluster.readNumber();
+		if ((secondLevelIndex > 0) && (secondLevelIndex < numberOfClusters)) {
+			setBitValue(bitVector, secondLevelIndex, false);
+		} else {
+			break;
+		}
+	}
+	fileEntries.erase(iterator);
+	saveClusterToPartition(0, bitVector);
+	writeRootDirectoryIndex();
+	return '1';
 }
 
 char KernelPartition::readRootDir(EntryNum entryNumber, Directory & directory) {
-	for (const auto& fileEntry : fileEntries) {
-		cout << fileEntry.first << " " << fileEntry.second->toString() << endl;
+	readRootDirectoryIndex();
+	char count = 0;
+	// TODO (acko): Double add everything to vector, fuck it.
+	for (auto fileEntry : fileEntries) {
+		if (count >= entryNumber) {
+			if (count == 64) {
+				return 65;
+			}
+			else {
+				directory[count - entryNumber] = *(fileEntry.second);
+			}
+		}
+		count++;
 	}
-	createRootDirectoryIndex();
-	return '1';
+	return count;
 }
 
 char KernelPartition::format() {	
@@ -100,7 +118,6 @@ void KernelPartition::saveClusterToPartition(ClusterNo clusterNumber, char *clus
 }
 
 bool KernelPartition::isRootDirectoryIndexCorrupted() {
-	// bytes [1020, 1024) inside rootDirectoryIndex should be equal to acko
 	auto partitionCluster = fetchClusterFromPartition(1);
 	auto cluster = KernelCluster(partitionCluster);
 	cluster.seek(1020);
@@ -109,6 +126,7 @@ bool KernelPartition::isRootDirectoryIndexCorrupted() {
 }
 
 char* KernelPartition::createRootDirectoryIndex() {
+	fileEntries.clear();
 	auto partitionCluster = new char[2048];
 	memset(partitionCluster, 0, 2048);
 	auto cluster = KernelCluster(partitionCluster);
@@ -121,59 +139,53 @@ char* KernelPartition::createRootDirectoryIndex() {
 }
 
 void KernelPartition::readRootDirectoryIndex() {
-	// this should be stored inside cluster 1
-	// fill it with random bullshit and test if this works 
-	// then fill it with many many files and test if this works ;)
-
+	fileEntries.clear();
 	auto partitionCluster = fetchClusterFromPartition(1);
-
 	KernelCluster cluster(partitionCluster);
-	// entries should start from 0, 20, 40, ..., 1000
-	// then 1020-1024 is empty
-	// then pointers... 
-
-	// beware if there is random data
 	while (cluster.getPosition() != 1020) {
 		if (cluster.peekByte() != 0) {
-			// there is something here
-			auto clusterEntry = cluster.readClusterEntry();
-			// add this to files
+			auto clusterEntry = new Entry(cluster.readClusterEntry());
+			// TODO (acko): Assert that it is unique
+			fileEntries[clusterEntry->getRelativePath()] = clusterEntry;
 		}
 		else {
-			// nothing to read, EOF
 			break;
 		}
 	}
-	if (cluster.getPosition() == 1020) {
-		cluster.readNumber();
-		// skip 4 bytes of noise
-	}
-	cout << cluster.getPosition() << endl;
+	cluster.seek(1024);
 	while (cluster.getPosition() != 2048) {
 		if (cluster.peekNumber() != 0) {
-			// there is something here
 			auto secondLevelClusterIndex = cluster.readNumber();
 			auto cachedSecondLevelCluster = fetchClusterFromPartition(secondLevelClusterIndex);
 			KernelCluster secondLevelCluster(cachedSecondLevelCluster);
-			cout << "index is: " << secondLevelClusterIndex << endl;
 			while (secondLevelCluster.getPosition() != 2040) {
 				if (secondLevelCluster.peekByte() != 0) {
-					// there is a file
-					auto clusterEntry = secondLevelCluster.readClusterEntry();
-					cout << clusterEntry.toString() << " this is some second level shit here" << endl;
-					// add this =)
-					break;
+					auto clusterEntry = new Entry(secondLevelCluster.readClusterEntry());
+					fileEntries[clusterEntry->getRelativePath()] = clusterEntry;
 				}
 				else {
 					break;
 				}
 			}
 		}
-		else {
-			// nothing to read, EOF
-	
+		else {	
 			break;
 		}
 	}
-	// read pointers then read clusters 
+}
+
+void KernelPartition::writeRootDirectoryIndex() {
+	auto rootDirectoryIndex = new char[2048];
+	memset(rootDirectoryIndex, 0, 2048);
+	auto rootDirectoryIndexCluster = KernelCluster(rootDirectoryIndex);
+	for (auto fileEntry : fileEntries) {
+		// TODO(acko): Oh shit... Add second level stuff here 
+		rootDirectoryIndexCluster.writeClusterEntry(*(fileEntry.second));
+	}
+	rootDirectoryIndexCluster.seek(1020);
+	rootDirectoryIndexCluster.writeByte('a');
+	rootDirectoryIndexCluster.writeByte('c');
+	rootDirectoryIndexCluster.writeByte('k');
+	rootDirectoryIndexCluster.writeByte('o');
+	saveClusterToPartition(1, rootDirectoryIndex);
 }
