@@ -24,29 +24,64 @@ File * KernelPartition::open(string fileName, char mode) {
 	// http://stackoverflow.com/questions/13064474/what-could-cause-a-deadlock-of-a-single-write-multiple-read-lock
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms686360(v=vs.85).aspx
 	// https://msdn.microsoft.com/en-us/library/dd759350.aspx
-	Entry *fileEntry = new Entry();
+	
+	auto result = new File();
+	if (mode == 'r') {
+		if (doesExist(fileName) == false) {
+			cout << "File " << fileName << " doesn't exist and can't be open for read!" << endl;
+			return nullptr;
+		} else {
+			auto fileEntry = fileEntries[fileName];
+			result->myImpl = new KernelFile(fileName, this, fileEntry->indexCluster, fileEntry->size, false);
+			return result;
+		}
+	}
+	else if (mode == 'w') {
+		if (doesExist(fileName) == true) {
+			deleteFile(fileName);
+		}
+		return createFile(fileName);
+	}
+	else if (mode == 'a') {
+		if (doesExist(fileName) == false) {
+			cout << "File " << fileName << " doesn't exist and can't be open for append!" << endl;
+			return nullptr;
+		}
+		else {
+			auto fileEntry = fileEntries[fileName];
+			result->myImpl = new KernelFile(fileName, this, fileEntry->indexCluster, fileEntry->size, true);
+			result->myImpl->seek(fileEntry->size);
+			return result;
+		}
+	}
+	else {
+		throw "up";
+	}
+}
+
+File * KernelPartition::createFile(std::string fileName) {
+	Entry	*fileEntry = new Entry();
+	/*
 	auto bitVector = new char[2048];
 	partition->readCluster(0, bitVector);
 	auto firstLevelIndex = findFirstNotSet(bitVector, 2048);
 	setBitValue(bitVector, firstLevelIndex, true);
 	partition->writeCluster(0, bitVector);
+	*/
 	fileEntry->splitRelativePath(fileName);
 	fileEntry->reserved = 0;
-	fileEntry->indexCluster = firstLevelIndex;
+	fileEntry->indexCluster = 0;
 	fileEntry->size = 0;
 	fileEntries.insert({ fileName, fileEntry });
-	// TODO(acko): Create a File and return it
-	return nullptr;
+	writeRootDirectoryIndex();
+	auto result = new File();
+	result->myImpl = new KernelFile(fileName, this, 0, 0, true);
+	return result;
 }
 
-char KernelPartition::doesExist(std::string fileName) {
+bool KernelPartition::doesExist(std::string fileName) {
 	auto iterator = fileEntries.find(fileName);
-	if (iterator == fileEntries.end()) {
-		return '0';
-	}
-	else {
-		return '1';
-	}
+	return iterator != fileEntries.end();
 }
 
 char KernelPartition::deleteFile(std::string fileName) {
@@ -56,23 +91,26 @@ char KernelPartition::deleteFile(std::string fileName) {
 		return '0';
 	}
 	auto iterator = fileEntries.find(fileName);
-	auto bitVector = fetchClusterFromPartition(0);
-	auto firstLevelIndex = iterator->second->indexCluster;
-	setBitValue(bitVector, firstLevelIndex, false);
-	auto firstLevelClusterPartition = fetchClusterFromPartition(firstLevelIndex);
-	auto firstLevelCluster = KernelCluster(firstLevelClusterPartition);
-	// TODO(acko): Do you need to delete everything?
-	firstLevelCluster.seek(1024);
-	while (firstLevelCluster.getPosition() != 2048) {
-		auto secondLevelIndex = firstLevelCluster.readNumber();
-		if ((secondLevelIndex > 0) && (secondLevelIndex < numberOfClusters)) {
-			setBitValue(bitVector, secondLevelIndex, false);
-		} else {
-			break;
+	if (iterator->second->size > 0) {
+		auto bitVector = fetchClusterFromPartition(0);
+		auto firstLevelIndex = iterator->second->indexCluster;
+		setBitValue(bitVector, firstLevelIndex, false);
+		auto firstLevelClusterPartition = fetchClusterFromPartition(firstLevelIndex);
+		auto firstLevelCluster = KernelCluster(firstLevelClusterPartition);
+		// TODO(acko): Do you need to delete everything?
+		firstLevelCluster.seek(1024);
+		while (firstLevelCluster.getPosition() != 2048) {
+			auto secondLevelIndex = firstLevelCluster.readNumber();
+			if ((secondLevelIndex > 0) && (secondLevelIndex < numberOfClusters)) {
+				setBitValue(bitVector, secondLevelIndex, false);
+			}
+			else {
+				break;
+			}
 		}
+		saveClusterToPartition(0, bitVector);
 	}
 	fileEntries.erase(iterator);
-	saveClusterToPartition(0, bitVector);
 	writeRootDirectoryIndex();
 	return '1';
 }
@@ -188,4 +226,16 @@ void KernelPartition::writeRootDirectoryIndex() {
 	rootDirectoryIndexCluster.writeByte('k');
 	rootDirectoryIndexCluster.writeByte('o');
 	saveClusterToPartition(1, rootDirectoryIndex);
+}
+
+void KernelPartition::updateIndexCluster(std::string fileName, ClusterNo indexCluster) {
+	readRootDirectoryIndex();
+	fileEntries[fileName]->indexCluster = indexCluster;
+	writeRootDirectoryIndex();
+}
+
+void KernelPartition::updateFileSize(std::string fileName, BytesCnt size) {
+	readRootDirectoryIndex();
+	fileEntries[fileName]->size = size;
+	writeRootDirectoryIndex();
 }

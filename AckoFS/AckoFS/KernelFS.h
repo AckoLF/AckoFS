@@ -24,7 +24,6 @@ public:
 	char doesExist(char *fileName);
 	char deleteFile(char *fileName);
 private:
-	// maybe change this bullshit to raw pointer ;) 
 	std::shared_ptr<KernelPartition> getPartition(char partitionSymbol);
 	HANDLE mutex;
 	std::vector<std::shared_ptr<KernelPartition>> mountedPartitions;

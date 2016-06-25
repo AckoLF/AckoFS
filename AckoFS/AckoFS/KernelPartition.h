@@ -7,6 +7,7 @@
 #include "file.h"
 #include "BitVector.h"
 #include "KernelCluster.h"
+#include "KernelFile.h"
 
 typedef std::string FileName;
 
@@ -16,21 +17,22 @@ public:
 	KernelPartition(Partition *partition);
 	~KernelPartition();
 	File* open(std::string fileName, char mode);
-	char doesExist(std::string fileName);
+	bool doesExist(std::string fileName);
 	char deleteFile(std::string fileName);
 	char readRootDir(EntryNum entryNumber, Directory & directory);
 	char format();
-private:
+public:
 	Partition *partition;
 	ClusterNo numberOfClusters;
 	char* fetchClusterFromPartition(ClusterNo clusterNumber);
 	void saveClusterToPartition(ClusterNo clusterNumber, char *cluster);
 	bool isRootDirectoryIndexCorrupted();
-	// need to add some files bro
 	std::unordered_map<FileName, Entry*> fileEntries;
-	// also handle index
 	char* createRootDirectoryIndex();
 	void readRootDirectoryIndex();
 	void writeRootDirectoryIndex();
+	void updateIndexCluster(std::string fileName, ClusterNo indexCluster);
+	void updateFileSize(std::string fileName, BytesCnt size);
+	File* createFile(std::string fileName);
 };
 

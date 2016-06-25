@@ -19,8 +19,7 @@ void KernelCluster::seek(unsigned int position) {
 
 char KernelCluster::readByte() {
 	if (position >= 2048U) {
-		// actually implement eof please, or should you? it should be faaaaaast...
-		throw "up";
+		throw "KernelCluster::readByte() end of file!";
 	}
 	return cluster[position++];
 }
@@ -30,6 +29,9 @@ void KernelCluster::writeByte(char byte) {
 }
 
 unsigned long KernelCluster::readNumber() {
+	if (position >= 2045U) {
+		throw "KernelCluster::readNumber() end of file!";
+	}
 	unsigned long result;
 	memcpy(&result, cluster + position, 4);
 	position += 4;
@@ -52,6 +54,9 @@ unsigned long KernelCluster::peekNumber() {
 }
 
 Entry KernelCluster::readClusterEntry() {
+	if (position >= 2029U) {
+		throw "KernelCluster::readClusterEntry() end of file!";
+	}
 	Entry clusterEntry;
 	for (int i = 0; i < FNAMELEN; i++) {
 		clusterEntry.name[i] = readByte();

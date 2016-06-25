@@ -2,6 +2,7 @@
 
 #include "part.h"
 #include "fs.h"
+#include "file.h"
 #include "BitVector.h"
 #include "KernelCluster.h"
 
@@ -53,16 +54,20 @@ int main(void) {
 	char path4[42] = "1:\\hooli.xyz";
 	path4[0] = p1Symbol;
 
-	auto file1 = FS::open(path1, 'r');
+	auto file1 = FS::open(path1, 'w');
 	auto file2 = FS::open(path2, 'w');
-	auto file3 = FS::open(path3, 'a');
+	auto file3 = FS::open(path3, 'w');
 
 	FS::deleteFile(path2);
 
-	auto file4 = FS::open(path4, 'a');
+	auto file4 = FS::open(path4, 'w');
 	
 	FS::deleteFile(path3);
-	
+
+	auto file5 = FS::open(path1, 'r');
+	auto file6 = FS::open(path2, 'r');
+	auto file7 = FS::open(path3, 'r');
+
 	Entry directory[64];
 	auto count = static_cast<int>(FS::readRootDir(p1Symbol, 0, directory));
 	
@@ -71,6 +76,24 @@ int main(void) {
 		auto entry = directory[i];
 		cout << entry.toString() << endl;
 	}
+
+	cout << "doesExist (hooli.xyz) = " << FS::doesExist("A:\\hooli.xyz") << endl;
 	
+	cout << "Some file testing stuffZ..." << endl;
+	
+	file1->write(4, "acko");
+	FS::deleteFile(path1);
+	cout << "obrisano" << endl;
+	file4->write(4, "acko");
+
+	cout << "Ooops I did it again!" << endl;
+	count = static_cast<int>(FS::readRootDir(p1Symbol, 0, directory));
+
+	cout << "Found " << count << " files" << endl;
+	for (auto i = 0; i < count; i++) {
+		auto entry = directory[i];
+		cout << entry.toString() << endl;
+	}
+
 	return 0;
 }

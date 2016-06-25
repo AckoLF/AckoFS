@@ -17,6 +17,7 @@ public:
 private:
 	friend class FS;
 	friend class KernelFS;
+	friend class KernelPartition;
 	File() = default; //objekat fajla se može kreirati samo otvaranjem
 	KernelFile *myImpl;
 };

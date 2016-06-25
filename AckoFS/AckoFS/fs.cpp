@@ -37,7 +37,12 @@ char FS::doesExist(char *fname) {
 	myImpl->lock();
 	auto result = myImpl->doesExist(fname);
 	myImpl->unlock();
-	return result;
+	if (result) {
+		return '1';
+	}
+	else {
+		return '0';
+	}
 }
 
 File * FS::open(char *fname, char mode) {

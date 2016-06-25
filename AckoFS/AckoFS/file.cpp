@@ -1,10 +1,13 @@
 #include "file.h"
+#include "KernelFile.h"
 
 File::~File() {
 }
 
-char File::write(BytesCnt, char * buffer) {
-	return 0;
+// TODO (acko): Add synchronization
+
+char File::write(BytesCnt count, char * buffer) {
+	return myImpl->write(count, buffer);
 }
 
 BytesCnt File::read(BytesCnt, char * buffer) {
