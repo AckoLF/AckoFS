@@ -38,7 +38,7 @@ void KernelFS::unlock() {
 char KernelFS::mount(Partition *partition) {
 	for (int i = 0; i < 26; i++) {
 		if (mountedPartitions[i] == nullptr) {
-			mountedPartitions[i] = make_shared<KernelPartition>(partition);
+			mountedPartitions[i] = new KernelPartition(partition);
 			return 'A' + i;		
 		}
 	}
@@ -49,6 +49,7 @@ char KernelFS::mount(Partition *partition) {
 char KernelFS::unmount(char partitionSymbol) {
 	auto partition = getPartition(partitionSymbol);
 	if (partition != nullptr) {
+		delete partition;
 		mountedPartitions[partitionSymbol - 'A'] = nullptr;
 		return '1';
 	}
@@ -111,7 +112,7 @@ char KernelFS::deleteFile(char *fileName) {
 	return partition->deleteFile(filePath);
 }
 
-std::shared_ptr<KernelPartition> KernelFS::getPartition(char partitionSymbol) {
+KernelPartition* KernelFS::getPartition(char partitionSymbol) {
 	if (('A' <= partitionSymbol) && (partitionSymbol <= 'Z')) {
 		return mountedPartitions[partitionSymbol - 'A'];
 	}

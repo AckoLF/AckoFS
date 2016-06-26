@@ -19,6 +19,7 @@ KernelPartition::KernelPartition(Partition *partition) {
 
 KernelPartition::~KernelPartition() {
 	// TODO(acko): Wait for all files to be closed.
+	waitToComplete();
 }
 
 File * KernelPartition::open(string fileName, char mode) {
@@ -33,12 +34,14 @@ File * KernelPartition::open(string fileName, char mode) {
 			cout << "File " << fileName << " doesn't exist and can't be open for read!" << endl;
 			return nullptr;
 		} else {
+			startReader(fileName);
 			auto fileEntry = fileEntries[fileName];
 			result->myImpl = new KernelFile(fileName, this, fileEntry->indexCluster, fileEntry->size, false, true);
 			return result;
 		}
 	}
 	else if (mode == 'w') {
+		startWriter(fileName);
 		if (doesExist(fileName) == true) {
 			deleteFile(fileName);
 		}
@@ -50,6 +53,7 @@ File * KernelPartition::open(string fileName, char mode) {
 			return nullptr;
 		}
 		else {
+			startWriter(fileName);
 			auto fileEntry = fileEntries[fileName];
 			result->myImpl = new KernelFile(fileName, this, fileEntry->indexCluster, fileEntry->size, true, true);
 			result->myImpl->seek(fileEntry->size);
@@ -315,4 +319,25 @@ void KernelPartition::updateFileSize(std::string fileName, BytesCnt size) {
 	readRootDirectoryIndex();
 	fileEntries[fileName]->size = size;
 	writeRootDirectoryIndex();
+}
+
+void KernelPartition::waitToComplete() {
+
+	readRootDirectoryIndex();
+	FS::myImpl->unlock();
+	for (auto entry : fileEntries) {
+		auto fileName = entry.first;
+		if (writerMutex.find(fileName) == writerMutex.end())
+			continue;
+
+		HANDLE resourceAccess = writerMutex[fileName];
+		DWORD dwWaitResult = WaitForSingleObject(resourceAccess, INFINITE);
+
+		while (threadCount[fileName] != 0) {
+			ReleaseSemaphore(resourceAccess, 1, NULL);
+			DWORD dwWaitResult = WaitForSingleObject(resourceAccess, INFINITE);
+		}
+
+		ReleaseSemaphore(resourceAccess, 1, NULL);
+	}
 }

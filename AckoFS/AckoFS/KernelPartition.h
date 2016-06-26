@@ -45,5 +45,6 @@ public:
 	void startReader(FileName);
 	void startWriter(FileName);
 	void closeReaderWriter(FileName fileName, bool canWrite);
+	void waitToComplete();
 };
 

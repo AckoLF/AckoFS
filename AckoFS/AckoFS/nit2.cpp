@@ -1,5 +1,6 @@
 #include"testprimer.h"
 
+
 DWORD WINAPI nit2run(){
 	//1.blok
 
@@ -59,6 +60,16 @@ DWORD WINAPI nit2run(){
 		delete dst;
 		wait(mutex); cout<<"Nit2: Zatvoren fajl 'fajl5.dat'"<<endl; signal(mutex);
 		delete src;
+
+		//////////////////
+		auto fajl5 = FS::open(filepath2, 'r');
+		ofstream acko("fajl5.jpg", ios::out | ios::binary);
+		char * buffercina = new char[20 * 1024 * 1024];
+		auto procitao = fajl5->read(0x7ffff, buffercina);
+		acko.write(buffercina, procitao);
+		delete buffercina;
+		//////////////////
+
 		wait(mutex); cout<<"Nit2: Zatvoren fajl 'fajl1.dat'"<<endl; signal(mutex);
 	}
 	wait(mutex); cout<<"Nit2: wait 1"<<endl; signal(mutex);

@@ -53,6 +53,7 @@ DWORD WINAPI nit3run(){
 		File *f=FS::open(filepath,'r');
 		wait(mutex); cout<<"Nit3: Otvoren fajl fajl2.dat"<<endl; signal(mutex);
 		ofstream fout("izlaz1.dat", ios::out|ios::binary);
+		cout << "Nit3: velicina = " << f->getFileSize() << endl;
 		char *buff=new char[f->getFileSize()];
 		f->read(f->getFileSize(),buff);
 		fout.write(buff,f->getFileSize());

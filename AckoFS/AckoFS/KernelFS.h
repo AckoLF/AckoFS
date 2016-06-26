@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include <memory>
 #include <string>
 #include <vector>
 #include <Windows.h>
@@ -24,9 +23,9 @@ public:
 	char doesExist(char *fileName);
 	char deleteFile(char *fileName);
 private:
-	std::shared_ptr<KernelPartition> getPartition(char partitionSymbol);
+	KernelPartition* getPartition(char partitionSymbol);
 	HANDLE mutex;
-	std::vector<std::shared_ptr<KernelPartition>> mountedPartitions;
+	std::vector<KernelPartition*> mountedPartitions;
 	friend class KernelFile;
 };
 
