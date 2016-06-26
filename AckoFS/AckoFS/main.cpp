@@ -38,8 +38,20 @@ int main(void) {
 
 	cout << "Hello, my name is AckoFS! :)" << endl;
 	auto p1 = new Partition("p1.ini");
+
+
+	/// DEEP FORMAT /////
+	auto deepFormat = new char[2048];
+	memset(deepFormat, 0, 2048);
+	for (int i = 0; i < p1->getNumOfClusters(); i++) {
+		p1->writeCluster(i, deepFormat);
+	}
+	//// DEEEP FORMAT ////////
+
+
 	auto p1Symbol = FS::mount(p1);
 	FS::format(p1Symbol);
+
 	cout << "P1 mounted at: " << p1Symbol << endl;
 	cout << "P1 formatted!" << endl;
 	char path1[42] = "1:\\fighters.foo";
@@ -81,10 +93,14 @@ int main(void) {
 	
 	cout << "Some file testing stuffZ..." << endl;
 	
-	file1->write(4, "acko");
-	FS::deleteFile(path1);
-	cout << "obrisano" << endl;
+	//file1->write(4, "acko");
+	//FS::deleteFile(path1);
+	//cout << "obrisano" << endl;
 	file4->write(4, "acko");
+
+	auto file9 = FS::open(path4, 'a');
+	file9->seek(2);
+	file9->write(10, "aleksandar");
 
 	cout << "Ooops I did it again!" << endl;
 	count = static_cast<int>(FS::readRootDir(p1Symbol, 0, directory));
@@ -95,5 +111,21 @@ int main(void) {
 		cout << entry.toString() << endl;
 	}
 
+	for (int i = 0; i < 100; i++) {
+		//file9->write(1, "m");
+	}
+	for (int i = 0; i < 1936; i++) {
+		//file9->write(1, "n");
+	}
+	file9->seek(6);
+	file9->truncate();
+	file9->write(4, "acko");
+	char * buffer = new char[4096];
+	auto file8 = FS::open(path4, 'r');
+	auto countRead = file8->read(0xffff, buffer);
+	cout << countRead << endl;
+	buffer[countRead] = '\0';
+	puts(buffer);
+	cout << file8->eof() << endl;
 	return 0;
 }

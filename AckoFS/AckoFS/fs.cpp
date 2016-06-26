@@ -90,5 +90,5 @@ std::string Entry::getRelativePath() {
 }
 
 std::string Entry::toString() {
-	return "Entry toString() -> " + getRelativePath() + " firstLevelCluster = " + std::to_string(indexCluster);
+	return "Entry toString() -> " + getRelativePath() + " firstLevelCluster = " + std::to_string(indexCluster) + " size = " + std::to_string(size);
 }

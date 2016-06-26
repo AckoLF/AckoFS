@@ -10,26 +10,26 @@ char File::write(BytesCnt count, char * buffer) {
 	return myImpl->write(count, buffer);
 }
 
-BytesCnt File::read(BytesCnt, char * buffer) {
-	return BytesCnt();
+BytesCnt File::read(BytesCnt count, char * buffer) {
+	return myImpl->read(count, buffer);
 }
 
-char File::seek(BytesCnt) {
-	return 0;
+char File::seek(BytesCnt position) {
+	return myImpl->seek(position);
 }
 
 BytesCnt File::filePos() {
-	return BytesCnt();
+	return myImpl->filePos();
 }
 
 char File::eof() {
-	return 0;
+	return myImpl->eof();
 }
 
 BytesCnt File::getFileSize() {
-	return BytesCnt();
+	return myImpl->getFileSize();
 }
 
 char File::truncate() {
-	return 0;
+	return myImpl->truncate();
 }
