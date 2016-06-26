@@ -68,7 +68,7 @@ char KernelFile::write(BytesCnt count, char *buffer) {
 
 BytesCnt KernelFile::read(BytesCnt count, char * buffer) {
 	loadClustersFromPartition();
-	cout << "KernelFile::read() fileName = " << fileName << " fileSize = " << fileSize << endl;
+	//cout << "KernelFile::read() fileName = " << fileName << " fileSize = " << fileSize << endl;
 	for (int i = 0; i < count; i++) {
 		if (position == fileSize) {
 			return fileSize;

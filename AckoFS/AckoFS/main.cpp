@@ -1,131 +1,75 @@
-#include <iostream>
-
-#include "part.h"
-#include "fs.h"
-#include "file.h"
-#include "BitVector.h"
-#include "KernelCluster.h"
-
-// link the partition library
-#pragma comment(lib, "part.lib")
+#include"testprimer.h"
 
 using namespace std;
 
-void bitVectorTest() {
-	cout << "===== bitVectorTest start =====" << endl;
-	char *bitVector = new char[2048];
-	memset(bitVector, 0, 2048);
-	for (int i = 0; i < 2048; i++) {
-		setBitValue(bitVector, i, true);
-	}
-	setBitValue(bitVector, 666, false);
-	cout << "findFirstNotSet(666) = " << findFirstNotSet(bitVector, 2048) << endl;
-	setBitValue(bitVector, 666, true);
-	cout << "findFirstNotSet(NO_FREE_CLUSTERS) = " << findFirstNotSet(bitVector, 2048) << endl;
-	cout << "===== bitVectorTest end   =====" << endl;
+HANDLE nit1,nit2,nit3;
+DWORD ThreadID;
+
+HANDLE semMain=CreateSemaphore(NULL,0,32,NULL);
+HANDLE sem12=CreateSemaphore(NULL,0,32,NULL);
+HANDLE sem13=CreateSemaphore(NULL,0,32,NULL);
+HANDLE sem21=CreateSemaphore(NULL,0,32,NULL);
+HANDLE sem23=CreateSemaphore(NULL,0,32,NULL);
+HANDLE sem31=CreateSemaphore(NULL,0,32,NULL);
+HANDLE sem32=CreateSemaphore(NULL,0,32,NULL);
+HANDLE mutex=CreateSemaphore(NULL,1,32,NULL);
+
+Partition *partition1, *partition2;
+char p1,p2;
+
+char *ulazBuffer;
+int ulazSize;
+
+ostream& operator<<(ostream &os,const Entry &E){
+	char name[13];
+	memcpy(name,E.name,8);
+	name[8]='.';
+	memcpy(name+9,E.ext,3);
+	name[12]=0;
+	return os<<name<<" ["<<E.size<<']';
 }
 
-void clusterPartitionTest() {
+int main(){
+	clock_t startTime,endTime;
+	cout<<"Pocetak testa!"<<endl;
+	startTime=clock();//pocni merenje vremena
 
-}
-
-void rootDirectoryTest() {
-
-}
-
-int main(void) {
-	// bitVectorTest();
-
-	cout << "Hello, my name is AckoFS! :)" << endl;
-	auto p1 = new Partition("p1.ini");
-
-
-	/// DEEP FORMAT /////
-	auto deepFormat = new char[2048];
-	memset(deepFormat, 0, 2048);
-	for (int i = 0; i < p1->getNumOfClusters(); i++) {
-		p1->writeCluster(i, deepFormat);
+	{//ucitavamo ulazni fajl u bafer, da bi nit 1 i 2 mogle paralelno da citaju
+		FILE *f=fopen("ulaz.dat","rb");
+		if(f==0){
+			cout<<"GRESKA: Nije nadjen ulazni fajl 'ulaz.dat' u os domacinu!"<<endl;
+			system("PAUSE");
+			return 0;//exit program
+		}
+		ulazBuffer=new char[32*1024*1024];//32MB
+		ulazSize=fread(ulazBuffer, 1, 32*1024*1024, f);
+		fclose(f);
 	}
-	//// DEEEP FORMAT ////////
 
+	nit1=CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE) nit1run,NULL,0,&ThreadID); //kreira i startuje niti
+	nit2=CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE) nit2run,NULL,0,&ThreadID);
+	nit3=CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE) nit3run,NULL,0,&ThreadID);
 
-	auto p1Symbol = FS::mount(p1);
-	FS::format(p1Symbol);
-
-	cout << "P1 mounted at: " << p1Symbol << endl;
-	cout << "P1 formatted!" << endl;
-	char path1[42] = "1:\\fighters.foo";
-	path1[0] = p1Symbol;
-
-	char path2[42] = "1:\\vinjak.xyz";
-	path2[0] = p1Symbol;
-
-	char path3[42] = "1:\\prodigy.wtf";
-	path3[0] = p1Symbol;
-
-	char path4[42] = "1:\\hooli.xyz";
-	path4[0] = p1Symbol;
-
-	auto file1 = FS::open(path1, 'w');
-	auto file2 = FS::open(path2, 'w');
-	auto file3 = FS::open(path3, 'w');
-
-	FS::deleteFile(path2);
-
-	auto file4 = FS::open(path4, 'w');
+	//for(int i=0; i<3; i++) wait(semMain);//cekamo da se niti zavrse
 	
-	FS::deleteFile(path3);
+	wait(semMain);
+	wait(semMain);
+	wait(semMain);
 
-	auto file5 = FS::open(path1, 'r');
-	auto file6 = FS::open(path2, 'r');
-	auto file7 = FS::open(path3, 'r');
-
-	Entry directory[64];
-	auto count = static_cast<int>(FS::readRootDir(p1Symbol, 0, directory));
-	
-	cout << "Found " << count << " files" << endl;
-	for (auto i = 0; i < count; i++) {
-		auto entry = directory[i];
-		cout << entry.toString() << endl;
-	}
-
-	cout << "doesExist (hooli.xyz) = " << FS::doesExist("A:\\hooli.xyz") << endl;
-	
-	cout << "Some file testing stuffZ..." << endl;
-	
-	//file1->write(4, "acko");
-	//FS::deleteFile(path1);
-	//cout << "obrisano" << endl;
-	file4->write(4, "acko");
-
-	auto file9 = FS::open(path4, 'a');
-	file9->seek(2);
-	file9->write(10, "aleksandar");
-
-	cout << "Ooops I did it again!" << endl;
-	count = static_cast<int>(FS::readRootDir(p1Symbol, 0, directory));
-
-	cout << "Found " << count << " files" << endl;
-	for (auto i = 0; i < count; i++) {
-		auto entry = directory[i];
-		cout << entry.toString() << endl;
-	}
-
-	for (int i = 0; i < 100; i++) {
-		//file9->write(1, "m");
-	}
-	for (int i = 0; i < 1936; i++) {
-		//file9->write(1, "n");
-	}
-	file9->seek(6);
-	file9->truncate();
-	file9->write(4, "acko");
-	char * buffer = new char[4096];
-	auto file8 = FS::open(path4, 'r');
-	auto countRead = file8->read(0xffff, buffer);
-	cout << countRead << endl;
-	buffer[countRead] = '\0';
-	puts(buffer);
-	cout << file8->eof() << endl;
+	delete [] ulazBuffer;
+	endTime=clock();
+	cout<<"Kraj test primera!"<<endl;
+	cout<<"Vreme izvrsavanja: "<<((double)(endTime-startTime)/((double)CLOCKS_PER_SEC/1000.0))<<"ms!"<<endl;
+	CloseHandle(mutex);
+	CloseHandle(semMain);
+	CloseHandle(sem12);
+	CloseHandle(sem13);
+	CloseHandle(sem21);
+	CloseHandle(sem23);
+	CloseHandle(sem31);
+	CloseHandle(sem32);
+	CloseHandle(nit1);
+	CloseHandle(nit2);
+	CloseHandle(nit3);
 	return 0;
 }

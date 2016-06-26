@@ -87,7 +87,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATED;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -153,7 +153,11 @@
     <ClCompile Include="KernelFile.cpp" />
     <ClCompile Include="KernelFS.cpp" />
     <ClCompile Include="KernelPartition.cpp" />
+    <ClCompile Include="Acko.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="nit1.cpp" />
+    <ClCompile Include="nit2.cpp" />
+    <ClCompile Include="nit3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BitVector.h" />
@@ -164,6 +168,7 @@
     <ClInclude Include="KernelFS.h" />
     <ClInclude Include="KernelPartition.h" />
     <ClInclude Include="part.h" />
+    <ClInclude Include="testprimer.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="uputstvo_za_rad_sa_particijom.txt" />
