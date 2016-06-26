@@ -45,4 +45,6 @@ public:
 protected:
 	FS() = default;
 	static KernelFS *myImpl;
+	friend class KernelFile;
+	friend class KernelPartition;
 };

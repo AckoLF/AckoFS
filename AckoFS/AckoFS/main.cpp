@@ -50,12 +50,8 @@ int main(){
 	nit2=CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE) nit2run,NULL,0,&ThreadID);
 	nit3=CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE) nit3run,NULL,0,&ThreadID);
 
-	//for(int i=0; i<3; i++) wait(semMain);//cekamo da se niti zavrse
+	for(int i=0; i<3; i++) wait(semMain);//cekamo da se niti zavrse
 	
-	wait(semMain);
-	wait(semMain);
-	wait(semMain);
-
 	delete [] ulazBuffer;
 	endTime=clock();
 	cout<<"Kraj test primera!"<<endl;

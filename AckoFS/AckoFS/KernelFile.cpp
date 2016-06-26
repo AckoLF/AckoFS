@@ -1,22 +1,45 @@
 #include "KernelFile.h"
+#include "fs.h"
+#include "KernelFS.h"
 
 #include <iostream>
 
 using namespace std;
 
-KernelFile::KernelFile(std::string fileName, KernelPartition * kernelPartition, ClusterNo firstLevelIndexClusterNumber, BytesCnt fileSize, bool canWrite) {
+KernelFile::KernelFile(std::string fileName, KernelPartition * kernelPartition, ClusterNo firstLevelIndexClusterNumber, BytesCnt fileSize, bool canWrite, bool canRead) {
 	this->fileName = fileName;
 	this->kernelPartition = kernelPartition;
 	this->firstLevelIndexClusterNumber = firstLevelIndexClusterNumber;
 	this->currentClusterNumber = firstLevelIndexClusterNumber;
 	this->fileSize = fileSize;
 	this->canWrite = canWrite;
+	this->canRead = canRead;
 	this->clusters.clear();
 	this->secondLevelClusters.clear();
+	mutex = FS::myImpl->mutex;
 }
 
 KernelFile::~KernelFile() {
-	// TODO (acko): What to do here?
+	// destroy the file...
+	kernelPartition->closeReaderWriter(fileName, canWrite);
+}
+
+void KernelFile::lock() {
+	auto result = WaitForSingleObject(mutex, INFINITE);
+	// check for any errors 
+	if (result == WAIT_FAILED) {
+		auto lastError = GetLastError();
+		cout << "Error! getLastError = " << hex << lastError << endl;
+	}
+}
+
+void KernelFile::unlock() {
+	auto result = ReleaseSemaphore(mutex, 1L, 0L);
+	// check for any errors
+	if (result == 0) {
+		auto lastError = GetLastError();
+		cout << "Error! getLastError = " << hex << lastError << endl;
+	}
 }
 
 // ((2048 / 2) / 4) * 2048
@@ -40,7 +63,7 @@ char KernelFile::write(BytesCnt count, char *buffer) {
 	loadClustersFromPartition();
 	for (int i = 0; i < count; i++) {
 		auto currentClusterPosition = position % 2048;
-		if (fileSize % 2048 == 0) {
+		if (fileSize % 2048 == 0 && position == fileSize) {
 			//cout << "KernelFile::write() -> Need to allocate new cluster" << endl;
 			auto bitVector = kernelPartition->fetchClusterFromPartition(0);
 			auto clusterNumber = findFirstNotSet(bitVector, 2048);
@@ -68,6 +91,10 @@ char KernelFile::write(BytesCnt count, char *buffer) {
 }
 
 BytesCnt KernelFile::read(BytesCnt count, char * buffer) {
+	if (canRead == false) {
+		cout << "File not open for reading!" << endl;
+		return 0;
+	}
 	loadClustersFromPartition();
 	cout << "KernelFile::read() fileName = " << fileName << " fileSize = " << fileSize << endl;
 	cout << "numberOfClusters = " << clusters.size() << endl;

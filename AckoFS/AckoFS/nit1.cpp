@@ -17,17 +17,14 @@ DWORD WINAPI nit1run(){
 		wait(mutex); cout<<"Nit1: Prepisan sadrzaj 'ulaz.dat' u 'fajl1.dat'"<<endl; signal(mutex);
 		f->seek(0);
 		char *toWr=new char[ulazSize+1];
+
 		auto procitao = f->read(0x7FFFFFFF,toWr);//namerno veci broj od velicine fajla
 		toWr[ulazSize]=0;//zatvaramo string pre ispisa
 		cout << "Procitao sam: " << procitao << ", a treba: " << ulazSize << endl;
 
-		cout << "ACKO REMOVE THIS" << endl;
-		
 
 		ofstream acko("acko.jpg", ios::out | ios::binary);
 		acko.write(toWr, procitao);
-
-		cout << "ACKO REMOVE THIS" << endl;
 
 		wait(mutex); 
 			cout<<"Nit1: Sadrzaj fajla 'fajl1.dat'"<<endl;
@@ -41,8 +38,8 @@ DWORD WINAPI nit1run(){
 
 
 
-	signal(semMain);
-	return 0;
+	//signal(semMain);
+	//return 0;
 	////////////////////////////
 
 

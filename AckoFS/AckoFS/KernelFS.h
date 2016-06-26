@@ -27,5 +27,6 @@ private:
 	std::shared_ptr<KernelPartition> getPartition(char partitionSymbol);
 	HANDLE mutex;
 	std::vector<std::shared_ptr<KernelPartition>> mountedPartitions;
+	friend class KernelFile;
 };
 

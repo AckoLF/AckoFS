@@ -8,6 +8,7 @@
 #include "BitVector.h"
 #include "KernelCluster.h"
 #include "KernelFile.h"
+#include <Windows.h>
 
 typedef std::string FileName;
 
@@ -34,5 +35,15 @@ public:
 	void updateIndexCluster(std::string fileName, ClusterNo indexCluster);
 	void updateFileSize(std::string fileName, BytesCnt size);
 	File* createFile(std::string fileName);
+	/////////////////////////////////////////
+	///// EKV - SINHRO //////////////////////
+	/////////////////////////////////////////
+	std::unordered_map<FileName, int> readerCount;
+	std::unordered_map<FileName, HANDLE> readerMutex;
+	std::unordered_map<FileName, HANDLE> writerMutex;
+	std::unordered_map<FileName, int> threadCount;
+	void startReader(FileName);
+	void startWriter(FileName);
+	void closeReaderWriter(FileName fileName, bool canWrite);
 };
 

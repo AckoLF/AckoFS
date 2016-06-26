@@ -3,8 +3,8 @@
 DWORD WINAPI nit2run(){
 	//1.blok
 
-	signal(semMain);
-	return 0;
+	//signal(semMain);
+	//return 0;
 	wait(mutex); partition2=new Partition("p2.ini"); signal(mutex);
 	wait(mutex); cout<<"Nit2: Kreirana particija"<<endl; signal(mutex);
 	p2=FS::mount(partition2);

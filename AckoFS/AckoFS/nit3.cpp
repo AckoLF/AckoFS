@@ -1,8 +1,8 @@
 #include"testprimer.h"
 
 DWORD WINAPI nit3run(){
-	signal(semMain);
-	return 0;
+	//signal(semMain);
+	//return 0;
 	////////////////////////
 
 	wait(sem23);	//ceka nit2

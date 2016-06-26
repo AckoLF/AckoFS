@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "KernelFS.h"
+
 using namespace std;
 
 KernelPartition::KernelPartition(Partition *partition) {
@@ -32,7 +34,7 @@ File * KernelPartition::open(string fileName, char mode) {
 			return nullptr;
 		} else {
 			auto fileEntry = fileEntries[fileName];
-			result->myImpl = new KernelFile(fileName, this, fileEntry->indexCluster, fileEntry->size, false);
+			result->myImpl = new KernelFile(fileName, this, fileEntry->indexCluster, fileEntry->size, false, true);
 			return result;
 		}
 	}
@@ -49,7 +51,7 @@ File * KernelPartition::open(string fileName, char mode) {
 		}
 		else {
 			auto fileEntry = fileEntries[fileName];
-			result->myImpl = new KernelFile(fileName, this, fileEntry->indexCluster, fileEntry->size, true);
+			result->myImpl = new KernelFile(fileName, this, fileEntry->indexCluster, fileEntry->size, true, true);
 			result->myImpl->seek(fileEntry->size);
 			return result;
 		}
@@ -61,13 +63,6 @@ File * KernelPartition::open(string fileName, char mode) {
 
 File * KernelPartition::createFile(std::string fileName) {
 	Entry	*fileEntry = new Entry();
-	/*
-	auto bitVector = new char[2048];
-	partition->readCluster(0, bitVector);
-	auto firstLevelIndex = findFirstNotSet(bitVector, 2048);
-	setBitValue(bitVector, firstLevelIndex, true);
-	partition->writeCluster(0, bitVector);
-	*/
 	fileEntry->splitRelativePath(fileName);
 	fileEntry->reserved = 0;
 	fileEntry->indexCluster = 0;
@@ -75,8 +70,82 @@ File * KernelPartition::createFile(std::string fileName) {
 	fileEntries.insert({ fileName, fileEntry });
 	writeRootDirectoryIndex();
 	auto result = new File();
-	result->myImpl = new KernelFile(fileName, this, 0, 0, true);
+	result->myImpl = new KernelFile(fileName, this, 0, 0, true, true);
 	return result;
+}
+
+void KernelPartition::startReader(FileName fileName) {
+	if (threadCount.find(fileName) == threadCount.end()) {
+		threadCount[fileName] = 0;
+		readerMutex[fileName] = CreateSemaphore(NULL, 1, 10000, NULL);
+		writerMutex[fileName] = CreateSemaphore(NULL, 1, 10000, NULL);
+		readerCount[fileName] = 0;
+	}
+
+	threadCount[fileName] ++;
+
+	HANDLE resourceAccess = writerMutex[fileName];
+	HANDLE readCountAccess = readerMutex[fileName];
+
+	FS::myImpl->unlock();
+
+	DWORD dwWaitResult = WaitForSingleObject(readCountAccess, INFINITE);
+	if (readerCount[fileName] == 0) {
+		DWORD dwWaitResult2 = WaitForSingleObject(resourceAccess, INFINITE);
+	}
+	readerCount[fileName]++;
+	ReleaseSemaphore(readCountAccess, 1, NULL);
+
+	FS::myImpl->lock();
+}
+
+void KernelPartition::startWriter(FileName fileName) {
+	if (threadCount.find(fileName) == threadCount.end()) {
+		threadCount[fileName] = 0;
+		readerMutex[fileName] = CreateSemaphore(NULL, 1, 10000, NULL);
+		writerMutex[fileName] = CreateSemaphore(NULL, 1, 10000, NULL);
+		readerCount[fileName] = 0;
+	}
+
+	threadCount[fileName]++;
+
+	HANDLE resourceAccess = writerMutex[fileName];
+	HANDLE readCountAccess = readerMutex[fileName];
+
+	FS::myImpl->unlock();
+
+	DWORD dwWaitResult = WaitForSingleObject(resourceAccess, INFINITE);
+
+	FS::myImpl->lock();
+}
+
+
+void KernelPartition::closeReaderWriter(FileName fileName, bool canWrite) {
+	HANDLE resourceAccess = writerMutex[fileName];
+	HANDLE readCountAccess = readerMutex[fileName];
+
+	threadCount[fileName]--;
+
+	if (canWrite) {
+		ReleaseSemaphore(resourceAccess, 1, NULL);
+	}
+	else {
+		DWORD dwWaitResult = WaitForSingleObject(readCountAccess, INFINITE);
+		readerCount[fileName]--;
+		if (readerCount[fileName] == 0) {
+			ReleaseSemaphore(resourceAccess, 1, NULL);
+		}
+		ReleaseSemaphore(readCountAccess, 1, NULL);
+	}
+
+	if (threadCount[fileName] == 0) {
+		threadCount.erase(fileName);
+		CloseHandle(readerMutex[fileName]);
+		readerMutex.erase(fileName);
+		CloseHandle(writerMutex[fileName]);
+		writerMutex.erase(fileName);
+		readerCount.erase(fileName);
+	}
 }
 
 bool KernelPartition::doesExist(std::string fileName) {
