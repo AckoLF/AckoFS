@@ -24,7 +24,7 @@ DWORD WINAPI nit1run(){
 		cout << "ACKO REMOVE THIS" << endl;
 		
 
-		ofstream acko("acko.txt", ios::out | ios::binary);
+		ofstream acko("acko.jpg", ios::out | ios::binary);
 		acko.write(toWr, procitao);
 
 		cout << "ACKO REMOVE THIS" << endl;

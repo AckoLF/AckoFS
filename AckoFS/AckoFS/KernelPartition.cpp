@@ -142,6 +142,14 @@ char KernelPartition::format() {
 	partition->writeCluster(0, bitVector);
 	auto rootDirectoryIndex = createRootDirectoryIndex();
 	partition->writeCluster(1, rootDirectoryIndex);
+
+	///
+	auto deepFormat = new char[2048];
+	memset(deepFormat, 0, 2048);
+	for (int i = 2; i < partition->getNumOfClusters(); i++) {
+		partition->writeCluster(i, deepFormat);
+	}
+	///
 	return 0;
 }
 

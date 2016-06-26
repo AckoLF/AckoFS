@@ -41,12 +41,12 @@ char KernelFile::write(BytesCnt count, char *buffer) {
 	for (int i = 0; i < count; i++) {
 		auto currentClusterPosition = position % 2048;
 		if (fileSize % 2048 == 0) {
-			cout << "KernelFile::write() -> Need to allocate new cluster" << endl;
+			//cout << "KernelFile::write() -> Need to allocate new cluster" << endl;
 			auto bitVector = kernelPartition->fetchClusterFromPartition(0);
 			auto clusterNumber = findFirstNotSet(bitVector, 2048);
 			setBitValue(bitVector, clusterNumber, true);
 			kernelPartition->saveClusterToPartition(0, bitVector);
-			cout << "KernelFile::write() -> Allocated " << clusterNumber << endl;
+			//cout << "KernelFile::write() -> Allocated " << clusterNumber << endl;
 			clusters.push_back(clusterNumber);
 		}
 		auto currentClusterNumber = clusters[position / 2048];
@@ -56,6 +56,7 @@ char KernelFile::write(BytesCnt count, char *buffer) {
 		auto byte = buffer[i];
 		currentCluster.writeByte(byte);
 		kernelPartition->saveClusterToPartition(currentClusterNumber, currentClusterPartition);
+		delete currentClusterPartition;
 		position++;
 		if (position > fileSize) {
 			fileSize = position;
@@ -68,7 +69,8 @@ char KernelFile::write(BytesCnt count, char *buffer) {
 
 BytesCnt KernelFile::read(BytesCnt count, char * buffer) {
 	loadClustersFromPartition();
-	//cout << "KernelFile::read() fileName = " << fileName << " fileSize = " << fileSize << endl;
+	cout << "KernelFile::read() fileName = " << fileName << " fileSize = " << fileSize << endl;
+	cout << "numberOfClusters = " << clusters.size() << endl;
 	for (int i = 0; i < count; i++) {
 		if (position == fileSize) {
 			return fileSize;
@@ -79,6 +81,7 @@ BytesCnt KernelFile::read(BytesCnt count, char * buffer) {
 		auto currentCluster = KernelCluster(currentClusterPartition);
 		currentCluster.seek(currentClusterPosition);
 		auto byte = currentCluster.readByte();
+		delete currentClusterPartition;
 		position++;
 		buffer[i] = byte;
 	}
@@ -125,7 +128,7 @@ void KernelFile::loadClustersFromPartition() {
 	secondLevelClusters.clear();
 	auto firstLevelIndexClusterPartition = kernelPartition->fetchClusterFromPartition(firstLevelIndexClusterNumber);
 	auto firstLevelIndexCluster = KernelCluster(firstLevelIndexClusterPartition);
-	while (firstLevelIndexCluster.getPosition() != 1024) {
+	while (firstLevelIndexCluster.getPosition() != 2044) {
 		if (firstLevelIndexCluster.peekNumber() != 0) {
 			auto clusterNumber = firstLevelIndexCluster.readNumber();
 			clusters.push_back(clusterNumber);
